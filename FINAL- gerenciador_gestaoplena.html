@@ -2067,8 +2067,8 @@ async function syncToCalendar() {
         reminders: {
           useDefault: false,
           overrides: [
-            { method: 'popup', minutes: 480 }, // 8h antes = manhã
-            { method: 'email', minutes: 480 },
+            { method: 'popup', minutes: -540 }, // 9h da manhã do próprio dia
+            { method: 'email', minutes: -540 },
           ],
         },
       };
