@@ -476,6 +476,85 @@
   }
 
 
+
+  /* ── PAINEL NOTAS LATERAL ── */
+  .notes-panel {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--white);
+    border-left: 1px solid var(--cream-dark);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .notes-panel-header {
+    background: var(--bordeaux);
+    color: var(--gold);
+    padding: 12px 14px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .notes-panel-header button {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: var(--white);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.2s;
+  }
+  .notes-panel-header button:hover { background: rgba(255,255,255,0.25); }
+  .notes-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sticky-card {
+    background: #FFFDE7;
+    border: 1px solid #FFF176;
+    border-radius: 4px;
+    padding: 8px;
+    position: relative;
+    box-shadow: 1px 2px 5px rgba(0,0,0,0.07);
+  }
+  .sticky-card textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    resize: none;
+    font-size: 12px;
+    min-height: 60px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-dark);
+    outline: none;
+  }
+  .sticky-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .sticky-card-date { font-size: 10px; color: var(--text-light); }
+  .sticky-card-del {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    line-height: 1;
+  }
+  .sticky-card-del:hover { color: var(--danger); }
+
   /* ── NOVA PASTA ── */
   .add-folder-btn {
     display: flex;
@@ -611,13 +690,22 @@
     <div id="gp-folders-list"></div>
     <button class="add-folder-btn" onclick="promptNovapasta('gp')">＋ Nova pasta GP</button>
 
-    <div class="folder-item" onclick="setFolder('notas')" id="f-notas" style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1)">
-      <span class="folder-icon">📝</span> Notas Rápidas
-    </div>
+
     <div class="folder-item" onclick="setFolder('todas')" id="f-todas">
       <span class="folder-icon">📌</span> Todas as Tarefas <span class="folder-count" id="cnt-todas">0</span>
     </div>
   </aside>
+
+  <!-- PAINEL NOTAS -->
+  <div class="notes-panel" id="notes-panel">
+    <div class="notes-panel-header">
+      📝 Notas Rápidas
+      <button onclick="addNote()" title="Nova nota">＋</button>
+    </div>
+    <div class="notes-panel-body" id="notes-body">
+      <!-- notas renderizadas aqui -->
+    </div>
+  </div>
 
   <!-- MAIN -->
   <div class="main">
@@ -933,8 +1021,7 @@ function setFolder(key) {
 
   // Título
   let title = 'Todas as Tarefas';
-  if (key === 'notas') title = 'Notas Rápidas';
-  else if (key !== 'todas') {
+  if (key !== 'todas') {
     const client = CLIENTS.find(c => 'client-' + c.toLowerCase().replace(/[^a-z0-9]/g,'') === key);
     if (client) title = client;
     else if (GP_FOLDERS[key]) title = GP_FOLDERS[key];
@@ -942,12 +1029,9 @@ function setFolder(key) {
   document.getElementById('topbar-title').textContent = title;
 
   // Mostrar/ocultar elementos
-  const isNotes = key === 'notas';
-  document.getElementById('filterbar').style.display = isNotes ? 'none' : 'flex';
-  document.getElementById('view-tabs').style.display = isNotes ? 'none' : 'flex';
-
-  if (isNotes) renderNotes();
-  else renderTasks();
+  document.getElementById('filterbar').style.display = 'flex';
+  document.getElementById('view-tabs').style.display = 'flex';
+  renderTasks();
 }
 
 // ══════════════════════════════
@@ -1067,7 +1151,7 @@ function renderTasks() {
   const area = document.getElementById('task-area');
   area.innerHTML = '';
 
-  if (currentFolder === 'notas') { renderNotes(); return; }
+
 
   renderUrgentPanel(area);
 
@@ -1103,32 +1187,27 @@ function renderTasks() {
 // ══════════════════════════════
 
 function renderNotes() {
-  const area = document.getElementById('task-area');
-  area.innerHTML = '';
+  const body = document.getElementById('notes-body');
+  if (!body) return;
+  body.innerHTML = '';
 
-  const grid = document.createElement('div');
-  grid.className = 'sticky-grid';
+  if (!notes.length) {
+    body.innerHTML = '<div style="font-size:12px;color:var(--text-light);text-align:center;padding:20px 10px">Clique em ＋ para criar uma nota</div>';
+    return;
+  }
 
   notes.forEach(n => {
     const div = document.createElement('div');
-    div.className = 'sticky-note';
+    div.className = 'sticky-card';
     div.innerHTML = `
-      <button class="sticky-del" onclick="deleteNote('${n.id}')">✕</button>
-      <textarea onchange="updateNote('${n.id}', this.value)">${escHTML(n.texto)}</textarea>
-      <div style="font-size:10px;color:#999;margin-top:4px">${n.data}</div>
+      <textarea onchange="updateNote('${n.id}', this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${escHTML(n.texto)}</textarea>
+      <div class="sticky-card-footer">
+        <span class="sticky-card-date">${n.data}</span>
+        <button class="sticky-card-del" onclick="deleteNote('${n.id}')" title="Excluir">🗑</button>
+      </div>
     `;
-    grid.appendChild(div);
+    body.appendChild(div);
   });
-
-  // Botão nova nota
-  const addBtn = document.createElement('div');
-  addBtn.className = 'sticky-note';
-  addBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px dashed #FFF176;background:transparent;';
-  addBtn.innerHTML = `<span style="font-size:32px;color:#999">+</span>`;
-  addBtn.onclick = addNote;
-  grid.appendChild(addBtn);
-
-  area.appendChild(grid);
 }
 
 function addNote() {
@@ -1136,6 +1215,11 @@ function addNote() {
   notes.push(n);
   saveData();
   renderNotes();
+  // focar no textarea da nova nota
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.sticky-card textarea');
+    if (cards.length) cards[cards.length-1].focus();
+  }, 50);
 }
 
 function deleteNote(id) {
@@ -1323,8 +1407,8 @@ function renderAll() {
   buildFolders();
   buildFolderSelect();
   updateCounts();
-  if (currentFolder === 'notas') renderNotes();
-  else renderTasks();
+  renderTasks();
+  renderNotes();
 }
 
 // ══════════════════════════════
