@@ -662,21 +662,21 @@ body {
   flex-shrink: 0;
 }
 .nota-card:hover { box-shadow: 3px 5px 14px rgba(107,27,42,0.13); }
-.nota-card.color-1 { background: #FFF8DC; }
-.nota-card.color-2 { background: #FEF4F4; }
-.nota-card.color-3 { background: #EEF2FF; }
-.nota-card.color-4 { background: #F0FFF4; }
-.nota-card.color-5 { background: #FFF0F5; }
+.nota-card.color-1 { background: #FAF3E0; border-left: 3px solid #C9A96E; }
+.nota-card.color-2 { background: #F5E6E8; border-left: 3px solid #6B1B2A; }
+.nota-card.color-3 { background: #F0E6CC; border-left: 3px solid #C9A96E; }
+.nota-card.color-4 { background: #EDE0D0; border-left: 3px solid #964F4C; }
+.nota-card.color-5 { background: #F2DDE0; border-left: 3px solid #8C3D3A; }
 .nota-card.closing {
   opacity: 0;
   transform: translateX(30px);
   transition: opacity 0.3s, transform 0.3s;
 }
-.nota-date { font-size: 10px; color: #9B8B6E; margin-bottom: 8px; letter-spacing: 0.5px; }
+.nota-date { font-size: 10px; color: #8C3D3A; margin-bottom: 8px; letter-spacing: 0.5px; font-weight: 600; }
 .nota-text {
   flex: 1;
   font-size: 13px;
-  color: #4A3728;
+  color: #2A1A1A;
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
@@ -1453,7 +1453,6 @@ function setSyncBadge(text) {
 // ========== RENDER ==========
 function render() {
   renderSidebar();
-  renderGPExtra();
   renderStats();
   renderTodayPanel();
   renderTasks();
@@ -2322,9 +2321,68 @@ async function syncToCalendar() {
   calendarSyncing = false;
 }
 
+
+// ═══════════════════════════════
+//  GERENCIAR PASTAS DINÂMICAS
+// ═══════════════════════════════
+
+function loadCustomFolders() {
+  try {
+    const DEFAULT_CLIENTS_REF = ['FMR Soluções','Gracy Ambiental','Lord Chicken e Burguers','Mobile Collection','Panobianco','Nutra','AD Telecom','Ki-Delícia'];
+    const DEFAULT_GP_REF = ['Gestão Plena — Documentos','Gestão Plena — Administrativo','Gestão Plena — Financeiro','Gestão Plena — Comercial','Gestão Plena — Fornecedores'];
+    const cc = localStorage.getItem('gp_custom_clients');
+    const cg = localStorage.getItem('gp_custom_gp');
+    if (cc) JSON.parse(cc).forEach(c => { if (!CLIENTS.includes(c)) CLIENTS.push(c); });
+    if (cg) JSON.parse(cg).forEach(f => { if (!GP_FOLDERS.includes(f)) GP_FOLDERS.push(f); });
+  } catch(e) {}
+}
+
+function saveCustomFolders() {
+  const DEFAULT_CLIENTS_REF = ['FMR Soluções','Gracy Ambiental','Lord Chicken e Burguers','Mobile Collection','Panobianco','Nutra','AD Telecom','Ki-Delícia'];
+  const DEFAULT_GP_REF = ['Gestão Plena — Documentos','Gestão Plena — Administrativo','Gestão Plena — Financeiro','Gestão Plena — Comercial','Gestão Plena — Fornecedores'];
+  try {
+    localStorage.setItem('gp_custom_clients', JSON.stringify(CLIENTS.filter(c => !DEFAULT_CLIENTS_REF.includes(c))));
+    localStorage.setItem('gp_custom_gp', JSON.stringify(GP_FOLDERS.filter(f => !DEFAULT_GP_REF.includes(f))));
+  } catch(e) {}
+}
+
+function novaPasta(tipo) {
+  const label = tipo === 'cliente' ? 'Nome do novo cliente:' : 'Nome da nova pasta Gestão Plena:';
+  const nome = prompt(label);
+  if (!nome || !nome.trim()) return;
+  const nomeLimpo = nome.trim();
+  if (tipo === 'cliente') {
+    if (CLIENTS.includes(nomeLimpo)) { alert('Este cliente já existe!'); return; }
+    CLIENTS.push(nomeLimpo);
+  } else {
+    const chave = 'Gestão Plena — ' + nomeLimpo;
+    if (GP_FOLDERS.includes(chave)) { alert('Esta pasta já existe!'); return; }
+    GP_FOLDERS.push(chave);
+  }
+  saveCustomFolders();
+  renderSidebar();
+  renderGPExtra();
+}
+
+function renderGPExtra() {
+  const container = document.getElementById('gpExtraFolders');
+  if (!container) return;
+  const DEFAULT_GP_REF = ['Gestão Plena — Documentos','Gestão Plena — Administrativo','Gestão Plena — Financeiro','Gestão Plena — Comercial','Gestão Plena — Fornecedores'];
+  container.innerHTML = '';
+  GP_FOLDERS.filter(f => !DEFAULT_GP_REF.includes(f)).forEach(f => {
+    const label = f.replace('Gestão Plena — ', '');
+    const count = tasks.filter(t => t.folder === f && t.status !== 'concluida').length;
+    const btn = document.createElement('button');
+    btn.className = 'folder-btn' + (currentFolder === f ? ' active' : '');
+    btn.id = 'btn-' + f;
+    btn.innerHTML = `<span class="folder-icon">📂</span> ${label} <span class="count">${count}</span>`;
+    btn.onclick = () => selectFolder(f);
+    container.appendChild(btn);
+  });
+}
+
 // ========== INIT ==========
 function init() {
-  loadCustomFolders();
   checkStorage();
   const EMBEDDED_TASKS = [{"id": "mpfus3otcw7qh", "folder": "FMR Soluções", "title": "Solicitação de informações de ponto da semana anterior", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "1", "dueDate": "2026-05-25", "notes": "", "comments": [], "attachments": []}, {"id": "mpfus3oxb4jy5", "folder": "FMR Soluções", "title": "Conciliação da semana anterior para conferência", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "1", "dueDate": "2026-05-25", "notes": "", "comments": [], "attachments": []}, {"id": "mpfus3oxfzjhz", "folder": "FMR Soluções", "title": "Verificar se tem expediente no sábado", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "3", "dueDate": "2026-05-27", "notes": "Confirmar com equipe FMR", "comments": [], "attachments": []}, {"id": "mpfus3oxclhxu", "folder": "FMR Soluções", "title": "Pagamento Brisa", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-15", "notes": "Todo dia 15", "comments": [], "attachments": []}, {"id": "mpfus3oxi0u0d", "folder": "FMR Soluções", "title": "Pagamento Gestão Plena", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-15", "notes": "Todo dia 15", "comments": [], "attachments": []}, {"id": "mpfus3oxhga6w", "folder": "FMR Soluções", "title": "Pagamento Brisa", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20", "comments": [], "attachments": []}, {"id": "mpfus3oyy4do5", "folder": "FMR Soluções", "title": "Pagamento Aluguel", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20", "comments": [], "attachments": []}, {"id": "mpfus3oysafgz", "folder": "FMR Soluções", "title": "Pagamento Alares", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-22", "notes": "Todo dia 22", "comments": [], "attachments": []}, {"id": "mpfus3oylo25l", "folder": "FMR Soluções", "title": "Links da Motorola", "priority": "media", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-01", "notes": "Todo dia 01", "comments": [], "attachments": []}, {"id": "mpfus3oydk5ra", "folder": "FMR Soluções", "title": "Faturamento contratos mensais", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-28", "notes": "Todo dia 28", "comments": [], "attachments": []}, {"id": "mpfus3oyszrnq", "folder": "FMR Soluções", "title": "Reunião mensal de resultados", "priority": "alta", "status": "pendente", "recurrence": "mensal_dia_util", "dueDate": "2026-06-05", "notes": "Todo 5º dia útil do mês", "comments": [], "attachments": []}, {"id": "mpfus3oyd3jhu", "folder": "Lord Chicken e Burguers", "title": "Reunião mensal de resultados", "priority": "media", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-10", "notes": "Todo dia 10", "comments": [], "attachments": []}, {"id": "mpfus3oytqrc0", "folder": "Lord Chicken e Burguers", "title": "Solicitar extrato para apuração do Simples", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-05", "notes": "Todo dia 05", "comments": [], "attachments": []}, {"id": "mpfus3oy6ivxh", "folder": "Panobianco", "title": "Envio de informações para fechamento de folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-26", "notes": "Todo dia 26", "comments": [], "attachments": []}, {"id": "mpfus3oy26627", "folder": "Panobianco", "title": "Conferência de pontos", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "2", "dueDate": "2026-05-26", "notes": "Toda terça-feira", "comments": [], "attachments": []}, {"id": "mpfus3oyi6d96", "folder": "Panobianco", "title": "Pagamento de INSS e FGTS", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oy065e2", "folder": "Panobianco", "title": "Pagamento de Folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-30", "notes": "Todo dia 30 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oy41yru", "folder": "Nutra", "title": "Envio de informações para fechamento de folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-26", "notes": "Todo dia 26", "comments": [], "attachments": []}, {"id": "mpfus3oykoy37", "folder": "Nutra", "title": "Conferência de pontos", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "2", "dueDate": "2026-05-26", "notes": "Toda terça-feira", "comments": [], "attachments": []}, {"id": "mpfus3oypaxq3", "folder": "Nutra", "title": "Pagamento de INSS e FGTS", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oyxn8ds", "folder": "Nutra", "title": "Pagamento de Folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-30", "notes": "Todo dia 30 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oysokie", "folder": "Ki-Delícia", "title": "Emitir guia do MEI", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-10", "notes": "Todo dia 10", "comments": [], "attachments": []}, {"id": "mpfus3oylu4u9", "folder": "AD Telecom", "title": "Enviar pagamentos do dia, baixas dos caixas da loja e atualização no grupo financeiro sobre valor em caixa", "priority": "alta", "status": "pendente", "recurrence": "diaria", "dueDate": "2026-05-21", "notes": "Todos os dias úteis", "comments": [], "attachments": []}, {"id": "mpfus3oylddm2", "folder": "AD Telecom", "title": "Nota de Câmara de Jundiá, Vila Flor e Tibau", "priority": "media", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-15", "notes": "Todo dia 15", "comments": [], "attachments": []}];
 
@@ -2344,7 +2402,9 @@ function init() {
 
   // ✅ CORREÇÃO: avança automaticamente datas de tarefas recorrentes vencidas
   advanceRecurringDates();
+  loadCustomFolders();
   render();
+  renderGPExtra();
 }
 
 init();
@@ -2354,82 +2414,6 @@ window.gapiLoaded = gapiLoaded;
 window.gsiLoaded = gsiLoaded;
 </script>
 <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-<script src="https://accounts.google.com/gsi/client" onload="gsiLoaded()">
-// ═══════════════════════════════
-//  GERENCIAR PASTAS DINÂMICAS
-// ═══════════════════════════════
-
-const DEFAULT_CLIENTS = [...CLIENTS];
-const DEFAULT_GP_FOLDERS = [...GP_FOLDERS];
-
-function loadCustomFolders() {
-  try {
-    const cc = localStorage.getItem('gp_custom_clients');
-    const cg = localStorage.getItem('gp_custom_gp');
-    if (cc) JSON.parse(cc).forEach(c => { if (!CLIENTS.includes(c)) CLIENTS.push(c); });
-    if (cg) JSON.parse(cg).forEach(f => { if (!GP_FOLDERS.includes(f)) GP_FOLDERS.push(f); });
-  } catch(e) {}
-}
-
-function saveCustomFolders() {
-  try {
-    localStorage.setItem('gp_custom_clients', JSON.stringify(CLIENTS.filter(c => !DEFAULT_CLIENTS.includes(c))));
-    localStorage.setItem('gp_custom_gp', JSON.stringify(GP_FOLDERS.filter(f => !DEFAULT_GP_FOLDERS.includes(f))));
-  } catch(e) {}
-}
-
-function novaPasta(tipo) {
-  const label = tipo === 'cliente' ? 'Nome do novo cliente:' : 'Nome da nova pasta (Gestão Plena):';
-  const nome = prompt(label);
-  if (!nome || !nome.trim()) return;
-  const nomeLimpo = nome.trim();
-
-  if (tipo === 'cliente') {
-    if (CLIENTS.includes(nomeLimpo)) { alert('Este cliente já existe!'); return; }
-    CLIENTS.push(nomeLimpo);
-  } else {
-    const chave = 'Gestão Plena — ' + nomeLimpo;
-    if (GP_FOLDERS.includes(chave)) { alert('Esta pasta já existe!'); return; }
-    GP_FOLDERS.push(chave);
-  }
-
-  saveCustomFolders();
-  renderSidebar();
-  renderGPExtra();
-  updateFolderSelect();
-}
-
-function renderGPExtra() {
-  const container = document.getElementById('gpExtraFolders');
-  if (!container) return;
-  container.innerHTML = '';
-  GP_FOLDERS.filter(f => !DEFAULT_GP_FOLDERS.includes(f)).forEach(f => {
-    const label = f.replace('Gestão Plena — ', '');
-    const count = tasks.filter(t => t.folder === f && t.status !== 'concluida').length;
-    const btn = document.createElement('button');
-    btn.className = 'folder-btn' + (currentFolder === f ? ' active' : '');
-    btn.id = 'btn-' + f;
-    btn.innerHTML = `<span class="folder-icon">📂</span> ${label} <span class="count">${count}</span>`;
-    btn.onclick = () => selectFolder(f);
-    container.appendChild(btn);
-  });
-}
-
-function updateFolderSelect() {
-  // Atualiza o <select> de pasta no modal de nova tarefa, se existir
-  const sel = document.getElementById('taskFolder') || document.getElementById('folderSelect') || document.getElementById('f-folder');
-  if (!sel) return;
-  const current = sel.value;
-  sel.innerHTML = '';
-  [...CLIENTS, ...GP_FOLDERS].forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f;
-    opt.textContent = f;
-    sel.appendChild(opt);
-  });
-  if (current) sel.value = current;
-}
-
-</script>
+<script src="https://accounts.google.com/gsi/client" onload="gsiLoaded()"></script>
 </body>
 </html>
