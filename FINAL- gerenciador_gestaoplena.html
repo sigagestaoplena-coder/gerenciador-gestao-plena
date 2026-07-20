@@ -2461,7 +2461,7 @@ function init() {
   if (backup) {
     try {
       const saved = JSON.parse(backup);
-      tasks = saved.length >= EMBEDDED_TASKS.length ? saved : EMBEDDED_TASKS;
+      tasks = Array.isArray(saved) ? saved : EMBEDDED_TASKS;
       setSyncBadge('✓ Dados carregados');
     } catch(e) {
       tasks = EMBEDDED_TASKS;
