@@ -147,6 +147,7 @@ input,select,textarea{font-family:inherit;}
   background:#fff;border:1px solid var(--border);border-left:2px solid var(--gold);
   border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.5;
   position:relative;color:var(--text);box-shadow:0 1px 4px rgba(107,27,42,0.04);
+  white-space:pre-line;
 }
 .note-del{position:absolute;top:8px;right:8px;background:transparent;color:var(--text-soft);font-size:11px;width:18px;height:18px;border-radius:4px;opacity:.5;}
 .note-del:hover{opacity:1;background:rgba(0,0,0,0.05);}
@@ -329,6 +330,13 @@ input,select,textarea{font-family:inherit;}
 </div>
 
 <div id="main">
+  <div id="storageWarningBanner" style="display:none;background:#A8442E;color:#fff;padding:14px 18px;border-radius:10px;margin-bottom:18px;font-size:14px;line-height:1.6;">
+    <strong>⚠️ Seu navegador está bloqueando o salvamento das tarefas!</strong><br>
+    Suas tarefas NÃO estão sendo guardadas. Pra corrigir:<br>
+    1. Clica no ícone de cadeado/informações ao lado do endereço do site (barra de endereço, lá em cima)<br>
+    2. Procura "Cookies e dados do site" e escolhe "Permitir"<br>
+    3. Recarrega a página (F5) e tenta cadastrar a tarefa de novo
+  </div>
   <div id="printHeader">
     <h2>Gestão Plena — Checklist do Dia</h2>
     <p id="printDate"></p>
@@ -672,13 +680,52 @@ function advanceOverdueRecurring(){
 
 // ========== PERSISTÊNCIA ==========
 function saveData(){
+  const payload = JSON.stringify({tasks, folders, notes, sections, savedAt: new Date().toISOString()});
   try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks, folders, notes, sections, savedAt: new Date().toISOString()}));
+    localStorage.setItem(STORAGE_KEY, payload);
+    // Confirma de verdade que gravou, lendo de volta (não confia só na ausência de erro)
+    const readBack = localStorage.getItem(STORAGE_KEY);
+    if(readBack !== payload){
+      showStorageWarning();
+      setSaveBadge('⚠ Não foi possível salvar');
+      return;
+    }
+    hideStorageWarning();
     setSaveBadge('✓ Salvo às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){
+    showStorageWarning();
     setSaveBadge('⚠ Erro ao salvar');
   }
 }
+function showStorageWarning(){
+  const el = document.getElementById('storageWarningBanner');
+  if(el) el.style.display = 'block';
+}
+function hideStorageWarning(){
+  const el = document.getElementById('storageWarningBanner');
+  if(el) el.style.display = 'none';
+}
+const TIPS_NOTE_ID = 'dica-fixa-uso-v1';
+const TIPS_NOTE_TEXT = `📌 Como usar bem o gerenciador
+
+• Abra pela view "Hoje" — é o que precisa resolver no dia.
+• Confira "Vence em breve" de manhã, pra já se planejar (INSS, FGTS, prazos).
+• "Vencidas" deve ficar sempre vazia — se aparecer algo, foi escapou do controle.
+
+• Rotinas repetidas de um cliente: use "+ Rotina em Lote" ao invés de cadastrar uma por uma.
+• Tarefas semanais: o sistema ajusta a data sozinha se você errar o dia inicial.
+• Separe bem Clientes de Seções internas (Financeiro, Administrativo etc.).
+
+• Clique em "Exportar" pelo menos 1x por semana e guarde num lugar seguro.
+• Sincronização entre aparelhos: gere o código sempre a partir do aparelho com os dados reais — nunca ao contrário. Na dúvida, exporte antes de conectar.
+• "Checklist do Dia" imprime só o que vence hoje, sem abrir o sistema todo.`;
+
+function ensureTipsNote(){
+  if(!notes.some(n=>n.id===TIPS_NOTE_ID)){
+    notes.push({id: TIPS_NOTE_ID, text: TIPS_NOTE_TEXT, createdAt: new Date(0).toISOString()});
+  }
+}
+
 function loadData(){
   const raw = localStorage.getItem(STORAGE_KEY);
   const DEFAULT_FOLDERS = [
@@ -698,6 +745,7 @@ function loadData(){
     folders = DEFAULT_FOLDERS.slice();
     notes = [];
     sections = DEFAULT_SECTIONS.slice();
+    ensureTipsNote();
     saveData();
     return;
   }
@@ -713,6 +761,7 @@ function loadData(){
     notes = [];
     sections = DEFAULT_SECTIONS.slice();
   }
+  ensureTipsNote();
 }
 function setSaveBadge(text){
   document.getElementById('saveBadge').textContent = text;
@@ -1246,6 +1295,9 @@ function copySyncCode(){
 
 function generateSyncCode(){
   if(!db){ alert('Não foi possível conectar ao serviço de sincronização.'); return; }
+  if(syncCode){
+    if(!confirm(`Este aparelho já está conectado ao código ${syncCode}.\n\nGerar um código novo vai desconectar desse grupo e criar um grupo separado. Continuar?`)) return;
+  }
   const code = genSyncCode();
   if(!confirm(`Isso vai enviar TODAS as tarefas, clientes e notas deste aparelho para a nuvem, sob o código:\n\n${code}\n\nDepois é só usar esse código no outro aparelho. Continuar?`)) return;
   syncCode = code;
@@ -1272,12 +1324,26 @@ function connectWithSyncCode(){
   if(!db){ alert('Não foi possível conectar ao serviço de sincronização.'); return; }
   const input = document.getElementById('syncCodeInput').value.trim().toUpperCase();
   if(!input){ alert('Cole um código válido.'); return; }
-  if(!confirm('Isso vai SUBSTITUIR os dados deste aparelho pelos dados da nuvem desse código. Os dados atuais deste aparelho serão perdidos (a menos que você tenha um backup exportado). Continuar?')) return;
-  syncCode = input;
-  localStorage.setItem(SYNC_CODE_KEY, syncCode);
-  attachSyncListeners();
-  closeSyncModal();
-  showToast('Conectando à sincronização...');
+
+  showToast('Verificando código...');
+  db.collection('syncs').doc(input).collection('tasks').get().then(snap=>{
+    const cloudCount = snap.size;
+    const localCount = tasks.length;
+    const msg = `Este código tem ${cloudCount} tarefa(s) salvas na nuvem.\n`
+      + `Este aparelho tem ${localCount} tarefa(s) agora.\n\n`
+      + (cloudCount === 0
+          ? `⚠️ ATENÇÃO: a nuvem desse código está VAZIA. Se você continuar, as ${localCount} tarefa(s) deste aparelho serão substituídas por NADA.\n\n`
+          : `Se continuar, as tarefas deste aparelho serão substituídas pelas ${cloudCount} da nuvem.\n\n`)
+      + `Exporte um backup antes se tiver qualquer dúvida. Continuar mesmo assim?`;
+    if(!confirm(msg)) return;
+    syncCode = input;
+    localStorage.setItem(SYNC_CODE_KEY, syncCode);
+    attachSyncListeners();
+    closeSyncModal();
+    showToast('Conectando à sincronização...');
+  }).catch(err=>{
+    alert('Não foi possível verificar esse código: ' + err.message);
+  });
 }
 
 function disconnectSync(){
@@ -1319,6 +1385,7 @@ function attachSyncListeners(){
         if(Array.isArray(d.folders)) folders = d.folders;
         if(Array.isArray(d.notes)) notes = d.notes;
         if(Array.isArray(d.sections)) sections = d.sections;
+        ensureTipsNote();
         renderAll();
         saveData();
         applyingRemoteUpdate = false;
@@ -1373,6 +1440,17 @@ function checkDateRollover(){
   lastKnownDate = tod;
 }
 function init(){
+  // Testa se o localStorage realmente funciona neste navegador, antes de qualquer coisa
+  try{
+    const testKey = '__gestaoplena_test__';
+    localStorage.setItem(testKey, '1');
+    const ok = localStorage.getItem(testKey) === '1';
+    localStorage.removeItem(testKey);
+    if(!ok) showStorageWarning();
+  }catch(e){
+    showStorageWarning();
+  }
+
   loadData();
   advanceOverdueRecurring();
   renderAll();
