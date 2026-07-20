@@ -1,2491 +1,1392 @@
 <!DOCTYPE html>
-<!-- saved from url=(0102)https://sigagestaoplena-coder.github.io/gerenciador-gestao-plena/FINAL-%20gerenciador_gestaoplena.html -->
-<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestão Plena — Gerenciador</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
 
-*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bordeaux:#6B1B2A;
+  --bordeaux-dark:#521320;
+  --marsala:#964F4C;
+  --cream:#FAF3E0;
+  --gold:#C9A96E;
+  --white:#FFFFFF;
+  --text:#3A2A2C;
+  --text-soft:#8A7873;
+  --danger:#A8442E;
+  --danger-bg:#F6E7E1;
+  --warn-bg:#F7EDD8;
+  --warn-text:#8C6A3D;
+  --ok:#6E8C63;
+  --ok-bg:#EEF2E8;
+  --border:#EBDFC9;
+  --radius:14px;
+  --shadow:0 2px 12px rgba(107,27,42,0.05);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);
+  color:var(--text);
+  display:flex;
+  min-height:100vh;
+}
+h1,h2,h3,.serif{font-family:'Libre Baskerville',serif;}
+button{font-family:inherit;cursor:pointer;border:none;}
+input,select,textarea{font-family:inherit;}
 
-:root {
-  --bordeaux: #5F1F2D;
-  --marsala: #8C3D3A;
-  --terracota: #C17A5A;
-  --terracota-light: #E8C4A8;
-  --cream: #FAF0E8;
-  --cream2: #F2E8DC;
-  --gold: #C9A96E;
-  --gold-light: #E0C99A;
-  --text-dark: #1E0A0D;
-  --text-mid: #7A3A35;
-  --text-light: #A06858;
-  --white: #FDF8F2;
-  --rose: #FEF4F4;
-  --rose-mid: #FDF0F0;
-  --shadow: 0 2px 12px rgba(95,31,45,0.10);
-  --shadow-md: 0 4px 24px rgba(95,31,45,0.16);
+/* ===== SIDEBAR ===== */
+#sidebar{
+  width:260px;
+  min-width:260px;
+  background:var(--bordeaux);
+  color:var(--cream);
+  padding:24px 18px;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
 }
+.brand h1{font-size:22px;margin:0;color:#fff;letter-spacing:.3px;}
+.brand h1 em{font-style:italic;color:var(--gold);}
+.brand p{margin:2px 0 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.65;}
+.save-badge{
+  font-size:11px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:20px;
+  padding:5px 10px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  color:var(--gold);
+  width:fit-content;
+}
+.side-actions{display:flex;gap:8px;}
+.side-btn{
+  flex:1;
+  background:rgba(255,255,255,0.08);
+  color:var(--cream);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:8px;
+  padding:8px 6px;
+  font-size:12px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.side-btn:hover{background:rgba(255,255,255,0.16);}
 
-body {
-  background: var(--cream);
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text-dark);
-  min-height: 100vh;
+.nav-section{display:flex;flex-direction:column;gap:2px;}
+.nav-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.5;margin:10px 0 4px 4px;}
+.nav-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 10px;border-radius:8px;color:var(--cream);
+  background:transparent;font-size:14px;text-align:left;width:100%;
 }
+.nav-item:hover{background:rgba(255,255,255,0.08);}
+.nav-item.active{background:rgba(255,255,255,0.16);font-weight:600;}
+.nav-item .label{display:flex;align-items:center;gap:8px;}
+.nav-item .count{
+  font-size:11px;background:rgba(0,0,0,0.2);
+  border-radius:10px;padding:1px 8px;min-width:20px;text-align:center;
+}
+.folder-add{
+  margin-top:4px;background:transparent;color:var(--gold);
+  font-size:13px;padding:8px 10px;text-align:left;opacity:.8;border-radius:8px;
+}
+.folder-add:hover{opacity:1;background:rgba(255,255,255,0.06);}
 
-/* LAYOUT */
-.app { display: flex; min-height: 100vh; }
+.sidebar-footer{margin-top:auto;font-size:11px;opacity:.45;line-height:1.5;}
 
-.sidebar {
-  width: 260px;
-  min-width: 260px;
-  background: var(--bordeaux);
-  padding: 28px 0;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  overflow-y: auto;
-  z-index: 100;
+/* ===== MAIN ===== */
+#main{flex:1;padding:32px 40px;overflow-y:auto;}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
+.topbar h2{font-size:15px;letter-spacing:1px;text-transform:uppercase;color:var(--marsala);margin:0;}
+.topbar-actions{display:flex;gap:10px;}
+.btn-primary{
+  background:var(--bordeaux);color:#fff;padding:11px 20px;border-radius:9px;
+  font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;
 }
+.btn-primary:hover{background:var(--bordeaux-dark);}
+.btn-ghost{
+  background:#fff;color:var(--bordeaux);border:1px solid var(--border);
+  padding:11px 16px;border-radius:9px;font-size:14px;font-weight:600;
+}
+.btn-ghost:hover{background:var(--cream);}
 
-.main {
-  margin-left: 260px;
-  flex: 1;
-  padding: 32px 36px;
-  max-width: calc(100vw - 260px - 300px);
-  transition: max-width 0.3s;
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{
+  background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 18px;box-shadow:var(--shadow);
 }
-.main.no-notas {
-  max-width: calc(100vw - 260px);
-}
+.stat-card .num{font-family:'Libre Baskerville',serif;font-size:30px;font-weight:700;color:var(--bordeaux);}
+.stat-card.warn .num{color:var(--danger);}
+.stat-card.soon .num{color:#A9824F;}
+.stat-card .lbl{font-size:12px;color:var(--text-soft);margin-top:2px;}
 
-/* SIDEBAR */
-.sidebar-header {
-  padding: 0 24px 24px;
-  border-bottom: 1px solid rgba(201,169,110,0.25);
-  margin-bottom: 16px;
+/* ===== NOTAS RÁPIDAS (coluna fixa permanente) ===== */
+#notesPanel{
+  width:270px;min-width:270px;
+  background:#FFFEFB;
+  border-left:1px solid var(--border);
+  padding:28px 22px;overflow-y:auto;
 }
-.sidebar-logo {
-  font-family: 'Libre Baskerville', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--cream);
-  line-height: 1.2;
+.notes-panel-header{margin-bottom:4px;}
+.notes-panel-header h3{margin:0;font-size:16px;letter-spacing:.5px;color:var(--marsala);font-weight:600;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
+.notes-add-link{
+  background:transparent;color:var(--gold);border:none;font-size:13px;
+  padding:10px 0;text-align:left;font-weight:600;
 }
-.sidebar-logo span { color: var(--gold-light); }
-.sidebar-sub {
-  font-size: 10px;
-  color: rgba(201,169,110,0.7);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-top: 4px;
+.notes-add-link:hover{color:var(--marsala);}
+.notes-list{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+.note-card{
+  background:#fff;border:1px solid var(--border);border-left:2px solid var(--gold);
+  border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.5;
+  position:relative;color:var(--text);box-shadow:0 1px 4px rgba(107,27,42,0.04);
 }
+.note-del{position:absolute;top:8px;right:8px;background:transparent;color:var(--text-soft);font-size:11px;width:18px;height:18px;border-radius:4px;opacity:.5;}
+.note-del:hover{opacity:1;background:rgba(0,0,0,0.05);}
+.notes-empty{font-size:12px;color:var(--text-soft);font-style:italic;margin-top:10px;}
 
-.sidebar-section {
-  padding: 0 16px;
-  margin-bottom: 8px;
+/* ===== SINCRONIZAÇÃO ===== */
+.sync-code-box{
+  background:var(--cream);border:1px solid var(--border);border-radius:10px;
+  padding:14px;text-align:center;margin:14px 0;
 }
-.sidebar-section-title {
-  font-size: 9px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold);
-  padding: 8px 8px 6px;
-  font-weight: 600;
+.sync-code-box .code{
+  font-family:'DM Sans',monospace;font-size:20px;font-weight:700;letter-spacing:1px;
+  color:var(--bordeaux);word-break:break-all;
 }
+.sync-status{
+  display:flex;align-items:center;gap:6px;font-size:12px;margin-top:6px;
+}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);}
+.sync-dot.off{background:var(--text-soft);}
+.sync-dot.error{background:var(--danger);}
+.divider-or{
+  text-align:center;color:var(--text-soft);font-size:12px;margin:16px 0;
+  display:flex;align-items:center;gap:10px;
+}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border);}
 
-.folder-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 9px 12px;
-  border: none;
-  background: transparent;
-  color: rgba(250,243,224,0.85);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  cursor: pointer;
-  border-radius: 8px;
-  text-align: left;
-  transition: all 0.15s;
-}
-.folder-btn:hover { background: rgba(201,169,110,0.18); color: var(--cream); }
-.folder-btn.active { background: rgba(0,0,0,0.2); color: var(--cream); font-weight: 700; border-left: 3px solid var(--gold); }
-.folder-btn .count {
-  margin-left: auto;
-  font-size: 10px;
-  background: rgba(201,169,110,0.2);
-  color: var(--gold);
-  padding: 2px 7px;
-  border-radius: 99px;
-  font-weight: 600;
-}
-.folder-icon { font-size: 14px; opacity: 0.8; }
-
-/* HEADER */
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.page-title {
-  font-family: 'Libre Baskerville', serif;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--cream);
-  line-height: 1.2;
-}
-.page-subtitle {
-  font-size: 11px;
-  color: var(--gold);
-  margin-top: 4px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.btn-primary {
-  background: var(--bordeaux);
-  color: var(--cream);
-  border: none;
-  border-radius: 8px;
-  padding: 11px 22px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.btn-primary:hover { background: var(--marsala); box-shadow: 0 2px 8px rgba(201,169,110,0.25); }
-.btn-sync {
-  background: transparent;
-  color: var(--bordeaux);
-  border: 1px solid var(--gold);
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.btn-sync:hover { background: var(--cream2); }
-.btn-sync.syncing { opacity: 0.7; cursor: wait; }
-.btn-sync.synced { border-color: #5A8A5A; color: #2E7D32; }
-
-/* STATS */
-.stats-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.stat-card {
-  background: var(--rose);
-  border: 1px solid var(--gold-light);
-  border-top: 2px solid var(--gold);
-  border-radius: 10px;
-  padding: 14px 20px;
-  flex: 1;
-  min-width: 130px;
-}
-.stat-num { font-size: 24px; font-weight: 700; color: var(--marsala); font-family: 'Libre Baskerville', serif; }
-.stat-label { font-size: 11px; color: var(--text-light); margin-top: 2px; }
-
-/* FILTERS */
-.filters {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.filter-pill {
-  padding: 6px 14px;
-  border-radius: 99px;
-  border: 1px solid var(--gold-light);
-  background: transparent;
-  color: var(--text-mid);
-  font-size: 12px;
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.15s;
-}
-.filter-pill:hover { border-color: var(--marsala); color: var(--marsala); }
-.filter-pill.active { background: var(--bordeaux); color: var(--cream); border-color: var(--gold); font-weight: 600; box-shadow: 0 0 0 1px var(--gold); }
-
-.search-box {
-  margin-left: auto;
-  padding: 7px 14px;
-  border: 1px solid var(--gold-light);
-  border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  background: var(--white);
-  color: var(--text-dark);
-  outline: none;
-  width: 200px;
-  transition: border-color 0.15s;
-}
-.search-box:focus { border-color: var(--marsala); }
-
-/* TASK CARDS */
-.tasks-list { display: flex; flex-direction: column; gap: 8px; }
-
-.task-card {
-  background: var(--rose);
-  border: 1px solid var(--gold-light);
-  border-radius: 10px;
-  padding: 14px 18px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-  border-left: 3px solid transparent;
-}
-.task-card:hover { box-shadow: var(--shadow); border-color: var(--gold); }
-.task-card.priority-alta { border-left-color: #C0392B; }
-.task-card.priority-media { border-left-color: var(--terracota); }
-.task-card.priority-baixa { border-left-color: #7DB87D; }
-.task-card.status-concluida { opacity: 0.55; }
-
-.task-check {
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  border: 2px solid var(--gold-light);
-  background: transparent;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-top: 1px;
-  transition: all 0.15s;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px;
-}
-.task-check:hover { border-color: var(--marsala); }
-.task-check.done { background: var(--marsala); border-color: var(--marsala); color: white; }
-.task-check.in-progress { background: var(--gold); border-color: var(--gold); color: white; }
-
-.task-body { flex: 1; min-width: 0; }
-.task-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-dark);
-  line-height: 1.4;
-}
-.task-title.done { text-decoration: line-through; color: var(--text-light); }
-.task-meta {
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.task-folder { font-size: 11px; color: var(--text-light); }
-.task-date {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 99px;
-  background: var(--cream2);
-  color: var(--text-mid);
-}
-.task-date.overdue { background: #FDECEA; color: #C0392B; font-weight: 600; }
-.task-date.today { background: #FFF3CD; color: #7D5A00; font-weight: 600; }
-.task-recurrence {
-  font-size: 10px;
-  color: var(--gold);
-  letter-spacing: 0.8px;
-  font-weight: 600;
+/* ===== IMPRESSÃO ===== */
+#printHeader{display:none;margin-bottom:18px;}
+#printHeader h2{color:var(--bordeaux);margin:0 0 4px;}
+#printHeader p{margin:0;color:var(--text-soft);font-size:13px;}
+@media print{
+  #sidebar, #notesPanel, .topbar-actions, .filter-row, .stats-row, .task-actions, .toast, .task-check{display:none !important;}
+  #main{padding:0;}
+  body{background:#fff;}
+  .task-card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
+  #printHeader{display:block;}
 }
 
-.badge-priority {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-weight: 600;
+.filter-row{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.tab{
+  background:#fff;border:1px solid var(--border);color:var(--text-soft);
+  padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;
 }
-.badge-alta { background: #FDECEA; color: #C0392B; }
-.badge-media { background: #F5E6DC; color: #8B4A2A; }
-.badge-baixa { background: #E8F5E9; color: #2E7D32; }
+.tab.active{background:var(--bordeaux);color:#fff;border-color:var(--bordeaux);}
+.search-box{
+  display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);
+  border-radius:20px;padding:8px 14px;font-size:13px;min-width:220px;
+}
+.search-box input{border:none;outline:none;flex:1;background:transparent;}
 
-/* MODAL */
-.modal-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(42,20,24,0.6);
-  z-index: 500;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(4px);
+#taskList{display:flex;flex-direction:column;gap:10px;}
+.task-card{
+  background:#fff;border:1px solid var(--border);border-left:4px solid var(--gold);
+  border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);
+  display:flex;gap:12px;align-items:flex-start;
 }
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--rose);
-  border-radius: 16px;
-  padding: 32px;
-  width: 100%;
-  max-width: 520px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-md);
+.task-card.overdue{border-left-color:var(--danger);background:var(--danger-bg);}
+.task-card.today{border-left-color:var(--gold);background:var(--warn-bg);}
+.task-card.soon{border-left-color:#C9A96E;background:#F9F4E9;}
+.task-card.done{opacity:.6;}
+.folder-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;}
+.task-check{
+  width:20px;height:20px;border-radius:50%;border:2px solid var(--marsala);
+  margin-top:2px;flex-shrink:0;background:transparent;
 }
-.modal-title {
-  font-family: 'Libre Baskerville', serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--bordeaux);
-  margin-bottom: 24px;
-  letter-spacing: -0.2px;
+.task-check.checked{background:var(--ok);border-color:var(--ok);position:relative;}
+.task-check.checked::after{
+  content:'✓';color:#fff;font-size:12px;position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
 }
-.form-group { margin-bottom: 16px; }
-.form-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--text-mid);
-  margin-bottom: 6px;
+.task-body{flex:1;min-width:0;}
+.task-title{font-size:15px;font-weight:600;color:var(--text);cursor:pointer;}
+.task-card.done .task-title{text-decoration:line-through;}
+.task-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center;}
+.badge{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:600;display:inline-flex;align-items:center;gap:4px;}
+.badge-folder{background:#F3E7DC;color:var(--marsala);}
+.badge-date{background:#F3E7DC;color:var(--text-soft);}
+.task-card.overdue .badge-date{background:var(--danger);color:#fff;}
+.task-card.today .badge-date{background:var(--gold);color:#fff;}
+.badge-rec{background:#EFEFEF;color:var(--text-soft);}
+.badge-alta{background:#FBE9E7;color:var(--danger);}
+.badge-media{background:#FFF3CD;color:var(--warn-text);}
+.badge-baixa{background:var(--ok-bg);color:var(--ok);}
+.task-notes{font-size:12px;color:var(--text-soft);margin-top:5px;}
+.task-actions{display:flex;gap:6px;flex-shrink:0;}
+.icon-btn{
+  background:transparent;color:var(--text-soft);width:30px;height:30px;
+  border-radius:7px;font-size:15px;display:flex;align-items:center;justify-content:center;
 }
-.form-input, .form-select, .form-textarea {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--gold-light);
-  border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: var(--text-dark);
-  background: var(--white);
-  outline: none;
-  transition: border-color 0.15s;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--marsala); background: var(--white); }
-.form-textarea { resize: vertical; min-height: 80px; }
-.form-row { display: flex; gap: 12px; }
-.form-row .form-group { flex: 1; }
+.icon-btn:hover{background:var(--cream);color:var(--bordeaux);}
 
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 24px;
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--text-soft);
+  background:#fff;border:1px dashed var(--border);border-radius:var(--radius);
 }
-.btn-secondary {
-  padding: 10px 20px;
-  border: 1px solid var(--gold-light);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-mid);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-secondary:hover { border-color: var(--marsala); color: var(--marsala); }
-.btn-danger {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #FDECEA;
-  color: #C0392B;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  cursor: pointer;
-}
+.empty-state .serif{font-size:19px;color:var(--marsala);margin-bottom:6px;}
 
-/* TODAY PANEL */
-.today-panel {
-  background: linear-gradient(135deg, var(--bordeaux), var(--marsala));
-  border-radius: 12px;
-  padding: 20px 24px;
-  margin-bottom: 24px;
-  color: var(--cream);
+/* ===== MODAL ===== */
+.overlay{
+  position:fixed;inset:0;background:rgba(58,42,44,0.45);
+  display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
 }
-.today-panel-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.7; margin-bottom: 6px; }
-.today-panel-count { font-family: 'Libre Baskerville', serif; font-size: 28px; font-weight: 700; }
-.today-panel-sub { font-size: 12px; opacity: 0.8; margin-top: 3px; }
-.today-tasks { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
-.today-task-item {
-  background: rgba(250,243,224,0.12);
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.overlay.open{display:flex;}
+.modal{
+  background:#fff;border-radius:16px;width:100%;max-width:520px;
+  max-height:90vh;overflow-y:auto;padding:28px;
 }
-.today-task-item.overdue { background: rgba(192,57,43,0.3); }
+.modal h3{margin:0 0 18px;font-size:19px;color:var(--bordeaux);}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-soft);margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+  font-size:14px;background:var(--cream);color:var(--text);
+}
+.form-row{display:flex;gap:12px;}
+.form-row .form-group{flex:1;}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+.btn-danger-ghost{background:transparent;color:var(--danger);padding:11px 16px;font-size:14px;font-weight:600;}
 
-/* EMPTY */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-light);
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--bordeaux);color:#fff;
+  padding:12px 20px;border-radius:9px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,0.2);
+  z-index:200;display:none;
 }
-.empty-state .icon { font-size: 40px; margin-bottom: 12px; }
-.empty-state p { font-size: 14px; }
+.toast.show{display:block;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-/* SYNC STATUS */
-.sync-badge {
-  font-size: 10px;
-  padding: 4px 10px;
-  border-radius: 99px;
-  background: rgba(201,169,110,0.15);
-  color: var(--gold);
-  border: 1px solid rgba(201,169,110,0.3);
-  margin-top: 8px;
-  display: inline-block;
+@media(max-width:800px){
+  body{flex-direction:column;}
+  #sidebar{width:100%;min-width:0;}
+  #main{padding:20px;}
+  .stats-row{grid-template-columns:repeat(3,1fr);}
+  #notesPanel{width:100%;min-width:0;border-left:none;border-top:1px solid var(--border);}
 }
-
-/* COMMENTS */
-.comment-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-.comment-item {
-  background: var(--cream2);
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--text-mid);
-  border-left: 3px solid var(--gold);
-}
-.comment-item .comment-date { font-size: 10px; color: var(--text-light); margin-bottom: 3px; }
-.comment-item .comment-text { line-height: 1.5; }
-.comment-input-area {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-.comment-input-area textarea {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--gold-light);
-  border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: var(--text-dark);
-  background: var(--cream);
-  outline: none;
-  resize: none;
-  height: 60px;
-}
-.comment-input-area textarea:focus { border-color: var(--marsala); background: var(--white); }
-.btn-comment {
-  padding: 8px 14px;
-  background: var(--bordeaux);
-  color: var(--cream);
-  border: none;
-  border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  align-self: flex-end;
-}
-.btn-comment:hover { background: var(--marsala); }
-
-/* STATUS SELECTOR */
-.status-selector {
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-}
-.status-opt {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  border: 2px solid var(--gold-light);
-  background: transparent;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s;
-  color: var(--text-mid);
-}
-.status-opt:hover { border-color: var(--marsala); }
-.status-opt.active-pendente { border-color: var(--gold); background: #FFF8E1; color: #7D5A00; font-weight: 600; }
-.status-opt.active-em_andamento { border-color: var(--marsala); background: #F5EAE8; color: var(--marsala); font-weight: 600; }
-.status-opt.active-concluida { border-color: #5A8A5A; background: #E8F5E9; color: #2E7D32; font-weight: 600; }
-
-/* ATTACHMENTS */
-.attachment-area { margin-top: 8px; }
-.attachment-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
-.attachment-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--cream2);
-  border: 1px solid var(--gold-light);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-}
-.attachment-item .att-icon { font-size: 16px; }
-.attachment-item .att-name { flex: 1; color: var(--text-dark); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.attachment-item .att-size { font-size: 10px; color: var(--text-light); white-space: nowrap; }
-.attachment-item .att-download {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--marsala);
-  font-size: 14px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.15s;
-}
-.attachment-item .att-download:hover { background: var(--rose); }
-.attachment-item .att-delete {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #C0392B;
-  font-size: 13px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.15s;
-}
-.attachment-item .att-delete:hover { background: #FDECEA; }
-.att-upload-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 2px dashed var(--gold-light);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-mid);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-  width: 100%;
-  justify-content: center;
-}
-.att-upload-btn:hover { border-color: var(--marsala); color: var(--marsala); background: var(--rose); }
-#attFileInput { display: none; }
-
-/* PAINEL LATERAL DE NOTAS */
-.notas-panel {
-  width: 280px;
-  min-width: 280px;
-  background: var(--cream);
-  border-left: 1px solid var(--gold-light);
-  position: fixed;
-  top: 0; right: 0; bottom: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 90;
-  transition: transform 0.3s;
-}
-.notas-panel.hidden { transform: translateX(100%); }
-.notas-panel-header {
-  padding: 20px 18px 14px;
-  border-bottom: 1px solid rgba(201,169,110,0.25);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bordeaux);
-}
-.notas-panel-title {
-  font-family: 'Libre Baskerville', serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--cream);
-  letter-spacing: -0.2px;
-}
-.notas-panel-add {
-  background: var(--bordeaux);
-  color: var(--cream);
-  border: none;
-  border-radius: 6px;
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  transition: background 0.15s;
-}
-.notas-panel-add:hover { background: var(--marsala); }
-.notas-panel-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.notas-toggle {
-  position: fixed;
-  right: 290px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--bordeaux);
-  color: var(--cream);
-  border: none;
-  border-radius: 6px 0 0 6px;
-  padding: 10px 6px;
-  cursor: pointer;
-  font-size: 12px;
-  z-index: 91;
-  writing-mode: vertical-rl;
-  letter-spacing: 1px;
-  font-family: 'DM Sans', sans-serif;
-  transition: right 0.3s, background 0.15s;
-}
-.notas-toggle:hover { background: var(--marsala); }
-.notas-toggle.hidden { right: 0; border-radius: 6px 0 0 6px; }
-
-/* NOTAS RÁPIDAS */
-.notas-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.nota-card {
-  background: #FFF8DC;
-  border-radius: 10px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 2px 3px 8px rgba(107,27,42,0.08);
-  position: relative;
-  transition: transform 0.15s, box-shadow 0.15s, opacity 0.3s;
-  flex-shrink: 0;
-}
-.nota-card:hover { box-shadow: 3px 5px 14px rgba(107,27,42,0.13); }
-.nota-card.color-1 { background: #FAF3E0; border-left: 3px solid #C9A96E; }
-.nota-card.color-2 { background: #F5E6E8; border-left: 3px solid #6B1B2A; }
-.nota-card.color-3 { background: #F0E6CC; border-left: 3px solid #C9A96E; }
-.nota-card.color-4 { background: #EDE0D0; border-left: 3px solid #964F4C; }
-.nota-card.color-5 { background: #F2DDE0; border-left: 3px solid #8C3D3A; }
-.nota-card.closing {
-  opacity: 0;
-  transform: translateX(30px);
-  transition: opacity 0.3s, transform 0.3s;
-}
-.nota-date { font-size: 10px; color: #8C3D3A; margin-bottom: 8px; letter-spacing: 0.5px; font-weight: 600; }
-.nota-text {
-  flex: 1;
-  font-size: 13px;
-  color: #2A1A1A;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-  outline: none;
-  border: none;
-  background: transparent;
-  resize: none;
-  font-family: 'DM Sans', sans-serif;
-  width: 100%;
-}
-.nota-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-  margin-top: 10px;
-}
-.nota-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 3px 6px;
-  border-radius: 6px;
-  opacity: 0.5;
-  transition: opacity 0.15s, background 0.15s;
-}
-.nota-btn:hover { opacity: 1; background: rgba(0,0,0,0.06); }
-
-.color-picker { display: flex; gap: 6px; margin-bottom: 10px; }
-.color-dot {
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.15s, transform 0.15s;
-}
-.color-dot:hover { transform: scale(1.2); }
-.color-dot.selected { border-color: var(--bordeaux); }
-
-/* DADOS IMPORTANTES */
-.dados-section { margin-bottom: 28px; }
-.dados-section-title {
-  font-family: 'Libre Baskerville', serif;
-  font-size: 16px;
-  color: var(--bordeaux);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--gold);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.dados-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
-}
-.dado-card {
-  background: var(--rose);
-  border: 1px solid var(--gold-light);
-  border-radius: 10px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: box-shadow 0.15s;
-}
-.dado-card:hover { box-shadow: var(--shadow); }
-.dado-icon { font-size: 24px; flex-shrink: 0; }
-.dado-info { flex: 1; min-width: 0; }
-.dado-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
-.dado-meta { font-size: 11px; color: var(--text-light); margin-top: 2px; }
-.dado-actions { display: flex; gap: 4px; }
-.dado-btn {
-  background: none; border: none; cursor: pointer;
-  font-size: 14px; padding: 4px 6px; border-radius: 6px;
-  color: var(--marsala); transition: background 0.15s;
-}
-.dado-btn:hover { background: var(--cream2); }
-.dado-btn.del { color: #C0392B; }
-.dado-btn.del:hover { background: #FDECEA; }
-.dado-upload-area {
-  border: 2px dashed var(--gold-light);
-  border-radius: 10px;
-  padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.15s;
-  background: transparent;
-  width: 100%;
-}
-.dado-upload-area:hover { border-color: var(--marsala); background: var(--rose); }
-.dado-upload-area p { font-size: 13px; color: var(--text-light); margin-top: 6px; }
-
-/* SECTIONS */
-.section-panel { display: none; }
-.section-panel.active { display: block; }
-
-/* TOAST */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--text-dark);
-  color: var(--cream);
-  padding: 10px 22px;
-  border-radius: 8px;
-  font-size: 13px;
-  z-index: 9999;
-  display: none;
-  white-space: nowrap;
-}
-
-/* ALERTA LOCALSTORAGE BLOQUEADO */
-.storage-alert {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  background: #C0392B;
-  color: white;
-  padding: 12px 24px;
-  font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
-  z-index: 9998;
-  display: none;
-  align-items: center;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.storage-alert.show { display: flex; }
-.storage-alert strong { font-weight: 700; }
-.storage-alert a {
-  color: #FFD700;
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* INDICADOR DE SALVAMENTO */
-.save-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  padding: 3px 8px;
-  border-radius: 99px;
-  margin-top: 6px;
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.3s;
-}
-.save-indicator.ok { background: rgba(90,138,90,0.2); color: #5A8A5A; border: 1px solid rgba(90,138,90,0.3); }
-.save-indicator.saving { background: rgba(201,169,110,0.2); color: var(--gold); border: 1px solid rgba(201,169,110,0.3); }
-.save-indicator.error { background: rgba(192,57,43,0.15); color: #C0392B; border: 1px solid rgba(192,57,43,0.3); }
-
-/* BOTÕES BACKUP */
-.backup-btns {
-  display: flex;
-  gap: 6px;
-  margin-top: 12px;
-  padding: 0 8px;
-}
-.btn-backup {
-  flex: 1;
-  padding: 7px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: center;
-  border: 1px solid rgba(201,169,110,0.3);
-  background: rgba(201,169,110,0.1);
-  color: var(--gold-light);
-}
-.btn-backup:hover { background: rgba(201,169,110,0.25); }
-#importFileInput { display: none; }
-
-@media (max-width: 900px) {
-  .notas-panel { display: none; }
-  .notas-toggle { display: none; }
-  .main { max-width: calc(100vw - 260px) !important; }
-}
-@media (max-width: 700px) {
-  .sidebar { width: 100%; min-width: unset; position: relative; height: auto; }
-  .main { margin-left: 0; max-width: 100% !important; padding: 20px 16px; }
-  .app { flex-direction: column; }
-  .form-row { flex-direction: column; }
-  .search-box { width: 100%; margin-left: 0; }
-}
-
-.add-folder-btn {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 4px 12px 6px 28px;
-  font-size: 11px;
-  color: rgba(255,255,255,0.45);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  letter-spacing: 0.3px;
-  transition: color 0.15s;
-}
-.add-folder-btn:hover { color: rgba(255,255,255,0.85); }
-
 </style>
-<style id="googleidentityservice_button_styles">.qJTHM{-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;color:#202124;direction:ltr;-webkit-touch-callout:none;font-family:Roboto-Regular,arial,sans-serif;-webkit-font-smoothing:antialiased;font-weight:400;margin:0;overflow:hidden;-webkit-text-size-adjust:100%}.ynRLnc{left:-9999px;position:absolute;top:-9999px}.L6cTce{display:none}.bltWBb{overflow-wrap:break-word;word-break:break-word}.hSRGPd{color:#1a73e8;cursor:pointer;font-weight:500;text-decoration:none}.Bz112c-W3lGp{height:16px;width:16px}.Bz112c-E3DyYd{height:20px;width:20px}.Bz112c-r9oPif{height:24px;width:24px}.Bz112c-u2z5K{height:36px;width:36px}.Bz112c-uaxL4e{border-radius:10px}.LgbsSe-Bz112c{display:block}.S9gUrf-YoZ4jf{border:none;margin:0;padding:0}.S9gUrf-YoZ4jf *{border:none;margin:0;padding:0}.fFW7wc-ibnC6b>.aZ2wEe>div{border-color:#4285f4}.P1ekSe-ZMv3u{-webkit-transition:height .2s linear;transition:height .2s linear}.P1ekSe-ZMv3u>div:first-child{background-color:#1a73e8!important;-webkit-transition:width .3s linear;transition:width .3s linear}.P1ekSe-ZMv3u>div:nth-child(2){background-image:-webkit-gradient(linear,left top,right top,from(rgba(255,255,255,.7)),to(rgba(255,255,255,.7))),-webkit-gradient(linear,left top,right top,from(#1a73e8),to(#1a73e8))!important;background-image:-webkit-linear-gradient(left,rgba(255,255,255,.7),rgba(255,255,255,.7)),-webkit-linear-gradient(left,#1a73e8,#1a73e8)!important;background-image:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(90deg,#1a73e8,#1a73e8)!important}.P1ekSe-ZMv3u>div:nth-child(3){background-image:-webkit-gradient(linear,left top,right top,from(rgba(255,255,255,.7)),to(rgba(255,255,255,.7))),-webkit-gradient(linear,left top,right top,from(#1a73e8),to(#1a73e8))!important;background-image:-webkit-linear-gradient(left,rgba(255,255,255,.7),rgba(255,255,255,.7)),-webkit-linear-gradient(left,#1a73e8,#1a73e8)!important;background-image:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(90deg,#1a73e8,#1a73e8)!important}.haAclf{display:inline-block}.nsm7Bb-HzV7m-LgbsSe{border-radius:4px;box-sizing:border-box;-webkit-transition:background-color .218s,border-color .218s;transition:background-color .218s,border-color .218s;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;-webkit-appearance:none;background-color:#fff;background-image:none;border:1px solid #dadce0;color:#3c4043;cursor:pointer;font-family:Google Sans,arial,sans-serif;font-size:.875rem;height:40px;letter-spacing:.25px;outline:none;overflow:hidden;padding:0 12px;position:relative;text-align:center;vertical-align:middle;white-space:nowrap;width:auto}@media screen and (-ms-high-contrast:active){.nsm7Bb-HzV7m-LgbsSe{border:2px solid windowText;color:windowText}}@media screen and (preferes-contrast:more){.nsm7Bb-HzV7m-LgbsSe{color:#000}}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe{font-size:.875rem;height:32px;letter-spacing:.25px;padding:0 10px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe{font-size:.6875rem;height:20px;letter-spacing:.3px;padding:0 8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe{padding:0;width:40px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe{width:32px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe{width:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK{border-radius:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.pSzOP-SxQuSe{border-radius:16px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.purZT-SxQuSe{border-radius:10px}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc{border:1px solid #8e918f;background-color:#131314;color:#e3e3e3}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc{border:none;color:#fff}.nsm7Bb-HzV7m-LgbsSe.MFS4be-v3pZbf-Ia7Qfc{background-color:#1a73e8}.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{background-color:#202124;color:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{color:#fff}}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:18px;margin-right:8px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:14px;min-width:14px;width:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:10px;min-width:10px;width:10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin-left:8px;margin-right:-4px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:10px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:4px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:3px;border-bottom-left-radius:3px;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center;-webkit-box-align:center;-webkit-align-items:center;align-items:center;background-color:#fff;height:36px;margin-left:-10px;margin-right:12px;min-width:36px;width:36px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c,.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:28px;margin-left:-8px;margin-right:10px;min-width:28px;width:28px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:16px;margin-left:-6px;margin-right:8px;min-width:16px;width:16px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:3px;margin-left:2px;margin-right:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:8px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-bN97Pc-sM5MNb{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;-webkit-box-align:center;align-items:center;-webkit-flex-direction:row;-webkit-box-orient:horizontal;-webkit-box-direction:normal;flex-direction:row;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;-webkit-flex-wrap:nowrap;flex-wrap:nowrap;height:100%;position:relative;width:100%}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX{-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{-webkit-flex-grow:1;-webkit-box-flex:1;flex-grow:1;font-family:Google Sans,arial,sans-serif;font-weight:500;overflow:hidden;text-overflow:ellipsis;vertical-align:top}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-weight:300}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX .nsm7Bb-HzV7m-LgbsSe-BPrWId{-webkit-flex-grow:0;-webkit-box-flex:0;flex-grow:0}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-MJoBVe{-webkit-transition:background-color .218s;transition:background-color .218s;bottom:0;left:0;position:absolute;right:0;top:0}.nsm7Bb-HzV7m-LgbsSe:focus,.nsm7Bb-HzV7m-LgbsSe:hover{box-shadow:none;border-color:rgb(210,227,252);outline:none}.nsm7Bb-HzV7m-LgbsSe:focus-within{outline:2px solid #00639b;border-color:transparent}.nsm7Bb-HzV7m-LgbsSe:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.08)}.nsm7Bb-HzV7m-LgbsSe:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.1)}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.08)}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.12)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.24)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.32)}.nsm7Bb-HzV7m-LgbsSe .n1UuX-DkfjY{border-radius:50%;display:-webkit-box;display:-webkit-flex;display:flex;height:20px;margin-left:-4px;margin-right:8px;min-width:20px;width:20px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-family:Roboto;font-size:12px;text-align:left}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .fmcmS,.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .ssJRIf{overflow:hidden;text-overflow:ellipsis}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;-webkit-box-align:center;align-items:center;color:#5f6368;fill:#5f6368;font-size:11px;font-weight:400}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.i5vt6e-to915-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#c4c7c5;fill:#c4c7c5}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#e8eaed;fill:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff,.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#000;fill:#000}}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .Bz112c{height:18px;margin:-3px -3px -3px 2px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:12px;margin-right:-10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.L5Fo6c-sM5MNb{border:0;display:block;left:0;position:relative;top:0}.L5Fo6c-bF1uUb{border-radius:4px;bottom:0;cursor:pointer;left:0;position:absolute;right:0;top:0}.L5Fo6c-bF1uUb:focus{border:none;outline:none}sentinel{}</style></head>
+</head>
 <body>
-<!-- ALERTA LOCALSTORAGE BLOQUEADO -->
-<div class="storage-alert" id="storageAlert">
-  <span>⚠️ <strong>Atenção:</strong> os dados NÃO estão sendo salvos! Seu navegador está bloqueando o armazenamento local.</span>
-  <a onclick="showStorageHelp()">Como resolver →</a>
+
+<div id="sidebar">
+  <div class="brand">
+    <h1>Gestão <em>Plena</em></h1>
+    <p>Gerenciador de Tarefas</p>
+  </div>
+  <div class="save-badge" id="saveBadge">● Pronto</div>
+  <button class="side-btn" style="width:100%;flex:none" onclick="openSyncModal()">🔄 Sincronização entre aparelhos</button>
+  <div class="side-actions">
+    <button class="side-btn" onclick="exportData()">⬇ Exportar</button>
+    <button class="side-btn" onclick="document.getElementById('importInput').click()">⬆ Importar</button>
+    <input type="file" id="importInput" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Visão Geral</div>
+    <button class="nav-item active" data-view="todas" onclick="setView('todas')">
+      <span class="label">📋 Todas as Tarefas</span><span class="count" id="cnt-todas">0</span>
+    </button>
+    <button class="nav-item" data-view="hoje" onclick="setView('hoje')">
+      <span class="label">📅 Hoje</span><span class="count" id="cnt-hoje">0</span>
+    </button>
+    <button class="nav-item" data-view="embreve" onclick="setView('embreve')">
+      <span class="label">⏳ Vence em breve</span><span class="count" id="cnt-embreve">0</span>
+    </button>
+    <button class="nav-item" data-view="vencidas" onclick="setView('vencidas')">
+      <span class="label">⚠️ Vencidas</span><span class="count" id="cnt-vencidas">0</span>
+    </button>
+  </div>
+
+  <div class="nav-section" style="flex:1;overflow-y:auto;">
+    <div class="nav-label">Clientes</div>
+    <div id="folderNav"></div>
+    <button class="folder-add" onclick="promptNewFolder()">+ Novo cliente</button>
+
+    <div class="nav-label" style="margin-top:14px;">Gestão Plena</div>
+    <div id="sectionNav"></div>
+    <button class="folder-add" onclick="promptNewSection()">+ Nova seção</button>
+  </div>
+
+  <div class="sidebar-footer">Gestão Plena — Terceirização<br>Administrativa e Financeira</div>
 </div>
 
-<div class="app" id="app">
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">Gestão <span>Plena</span></div>
-      <div class="sidebar-sub">Gerenciador de Tarefas</div>
-      <div class="sync-badge" id="syncBadge">✓ Dados carregados</div>
-      <div class="save-indicator ok" id="saveIndicator">✓ Dados salvos</div>
-    </div>
-    <div class="backup-btns">
-      <button class="btn-backup" onclick="exportBackup()" title="Baixar backup JSON">⬇ Exportar</button>
-      <button class="btn-backup" onclick="document.getElementById(&#39;importFileInput&#39;).click()" title="Restaurar backup JSON">⬆ Importar</button>
-      <input type="file" id="importFileInput" accept=".json" onchange="importBackup(this)">
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Visão Geral</div>
-      <button class="folder-btn" onclick="selectFolder(&#39;todas&#39;)" id="btn-todas">
-        <span class="folder-icon">📋</span> Todas as Tarefas
-        <span class="count" id="count-todas">33</span>
-      </button>
-      <button class="folder-btn" onclick="selectFolder(&#39;hoje&#39;)" id="btn-hoje">
-        <span class="folder-icon">📅</span> Hoje
-        <span class="count" id="count-hoje">7</span>
-      </button>
-      <button class="folder-btn" onclick="selectFolder(&#39;vencidas&#39;)" id="btn-vencidas">
-        <span class="folder-icon">⚠️</span> Vencidas
-        <span class="count" id="count-vencidas">2</span>
-      </button>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Clientes</div>
-      <div id="clientFolders"><button class="folder-btn" id="btn-FMR Soluções"><span class="folder-icon">📁</span> FMR Soluções <span class="count">12</span></button><button class="folder-btn" id="btn-Gracy Ambiental"><span class="folder-icon">📁</span> Gracy Ambiental <span class="count">4</span></button><button class="folder-btn" id="btn-Lord Chicken e Burguers"><span class="folder-icon">📁</span> Lord Chicken e Burguers <span class="count">2</span></button><button class="folder-btn" id="btn-Mobile Collection"><span class="folder-icon">📁</span> Mobile Collection <span class="count">0</span></button><button class="folder-btn" id="btn-Panobianco"><span class="folder-icon">📁</span> Panobianco <span class="count">5</span></button><button class="folder-btn" id="btn-Nutra"><span class="folder-icon">📁</span> Nutra <span class="count">5</span></button><button class="folder-btn active" id="btn-AD Telecom"><span class="folder-icon">📁</span> AD Telecom <span class="count">3</span></button><button class="folder-btn" id="btn-Ki-Delícia"><span class="folder-icon">📁</span> Ki-Delícia <span class="count">1</span></button><button class="folder-btn" id="btn-Manias Burg"><span class="folder-icon">📁</span> Manias Burg <span class="count">0</span></button></div>
-      <button class="add-folder-btn" onclick="novaPasta(&#39;cliente&#39;)">＋ Novo cliente</button>
-    </div>
-    <div class="sidebar-section" style="margin-top:8px">
-      <div class="sidebar-section-title">Gestão Plena</div>
-      <button class="folder-btn" onclick="selectFolder(&#39;Gestão Plena — Documentos&#39;)" id="btn-Gestão Plena — Documentos">
-        <span class="folder-icon">📄</span> Documentos
-        <span class="count" id="count-Gestão Plena — Documentos">0</span>
-      </button>
-      <button class="folder-btn" onclick="selectFolder(&#39;Gestão Plena — Administrativo&#39;)" id="btn-Gestão Plena — Administrativo">
-        <span class="folder-icon">📋</span> Administrativo
-        <span class="count" id="count-Gestão Plena — Administrativo">1</span>
-      </button>
-      <button class="folder-btn" onclick="selectFolder(&#39;Gestão Plena — Financeiro&#39;)" id="btn-Gestão Plena — Financeiro">
-        <span class="folder-icon">💰</span> Financeiro
-        <span class="count" id="count-Gestão Plena — Financeiro">0</span>
-      </button>
-      <button class="folder-btn" onclick="selectFolder(&#39;Gestão Plena — Comercial&#39;)" id="btn-Gestão Plena — Comercial">
-        <span class="folder-icon">📁</span> Comercial
-        <span class="count" id="count-Gestão Plena — Comercial">0</span>
-      </button>
-      <button class="folder-btn" onclick="selectFolder(&#39;Gestão Plena — Fornecedores&#39;)" id="btn-Gestão Plena — Fornecedores">
-        <span class="folder-icon">👥</span> Fornecedores
-        <span class="count" id="count-Gestão Plena — Fornecedores">0</span>
-      </button>
-      <div id="gpExtraFolders"></div>
-      <button class="add-folder-btn" onclick="novaPasta(&#39;gp&#39;)">＋ Nova pasta GP</button>
-    </div>
-    <div class="sidebar-section" style="margin-top:8px">
-      <div class="sidebar-section-title">Ferramentas</div>
-      <button class="folder-btn" onclick="showSection(&#39;notas&#39;)" id="btn-notas">
-        <span class="folder-icon">🗒️</span> Notas Rápidas
-      </button>
-      <button class="folder-btn" onclick="showSection(&#39;dados&#39;)" id="btn-dados">
-        <span class="folder-icon">🔒</span> Dados Importantes
-      </button>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-    <div class="page-header">
-      <div>
-        <div class="page-title" id="pageTitle">AD Telecom</div>
-        <div class="page-subtitle" id="pageSubtitle">3 tarefa(s) pendente(s)</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-      <button class="btn-sync" id="btnSync" onclick="handleCalendarSync()" title="Sincronizar com Google Agenda">📅 Sincronizar Agenda</button>
-      <button class="btn-primary" onclick="openModal()">+ Nova Tarefa</button>
-    </div>
-    </div>
-
-    <!-- PAINEL HOJE -->
-    <div class="today-panel" id="todayPanel" style="display: none;">
-      <div class="today-panel-title">Agenda do Dia</div>
-      <div class="today-panel-count" id="todayCount">9 tarefas</div>
-      <div class="today-panel-sub" id="todaySubtitle">2 vencida(s) + 7 para hoje</div>
-      <div class="today-tasks" id="todayTasksList"><div class="today-task-item overdue"><span>⚠️</span> <span style="flex:1">CRIAR SISTEMA QUE SUBSTITUA CASH TRACK</span> <span style="opacity:0.7;font-size:10px">Gestão Plena — Administrativo</span></div><div class="today-task-item overdue"><span>⚠️</span> <span style="flex:1">Notas fiscais - Reserva Majestic</span> <span style="opacity:0.7;font-size:10px">Gracy Ambiental</span></div><div class="today-task-item"><span>📅</span> <span style="flex:1">Pagamento Brisa</span> <span style="opacity:0.7;font-size:10px">FMR Soluções</span></div><div class="today-task-item"><span>📅</span> <span style="flex:1">Pagamento Aluguel</span> <span style="opacity:0.7;font-size:10px">FMR Soluções</span></div><div class="today-task-item"><span>📅</span> <span style="flex:1">Pagamento de INSS e FGTS</span> <span style="opacity:0.7;font-size:10px">Panobianco</span></div><div class="today-task-item"><span>📅</span> <span style="flex:1">Pagamento de INSS e FGTS</span> <span style="opacity:0.7;font-size:10px">Nutra</span></div></div>
-    </div>
-
-    <!-- STATS -->
-    <div class="stats-bar" id="statsBar">
-      <div class="stat-card">
-        <div class="stat-num" id="statPendentes">3</div>
-        <div class="stat-label">Pendentes</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statAndamento">0</div>
-        <div class="stat-label">Em Andamento</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statConcluidas">0</div>
-        <div class="stat-label">Concluídas</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statVencidas" style="color:#C0392B">0</div>
-        <div class="stat-label">Vencidas</div>
-      </div>
-    </div>
-
-    <!-- FILTERS -->
-    <div class="filters">
-      <button class="filter-pill" onclick="setFilter(&#39;todas&#39;)" id="f-todas">Todas</button>
-      <button class="filter-pill active" onclick="setFilter(&#39;pendente&#39;)" id="f-pendente">Pendentes</button>
-      <button class="filter-pill" onclick="setFilter(&#39;em_andamento&#39;)" id="f-em_andamento">Em Andamento</button>
-      <button class="filter-pill" onclick="setFilter(&#39;concluida&#39;)" id="f-concluida">Concluídas</button>
-      <input class="search-box" type="text" placeholder="🔍 Buscar tarefa..." oninput="setSearch(this.value)" id="searchInput">
-    </div>
-
-    <!-- TASKS -->
-    <div class="tasks-list" id="tasksList"><div class="task-card priority-alta">
-      <div class="task-check " onclick="cycleStatus(&#39;mq6lzg2rlr0xw&#39;)"></div>
-      <div class="task-body">
-        <div class="task-title">Enviar pagamentos do dia, baixas dos caixas da loja e atualização no grupo financeiro sobre valor em caixa</div>
-        <div class="task-meta">
-          <span class="task-folder">AD Telecom</span>
-          <span class="task-date today">📅 Hoje 20/07/2026</span>
-          <span class="task-recurrence">↻ Diária</span>
-          <span class="badge-priority badge-alta">Alta</span>
-        </div>
-        <div style="font-size:11px;color:var(--text-light);margin-top:4px">Todos os dias úteis</div>
-        
-      </div>
-    </div><div class="task-card priority-alta">
-      <div class="task-check " onclick="cycleStatus(&#39;mq6ly027hnz6d&#39;)"></div>
-      <div class="task-body">
-        <div class="task-title">Notas fiscais PJ</div>
-        <div class="task-meta">
-          <span class="task-folder">AD Telecom</span>
-          <span class="task-date ">01/08/2026</span>
-          <span class="task-recurrence">↻ Mensal</span>
-          <span class="badge-priority badge-alta">Alta</span>
-        </div>
-        <div style="font-size:11px;color:var(--text-light);margin-top:4px">Controle na planilha de PJ</div>
-        
-      </div>
-    </div><div class="task-card priority-media">
-      <div class="task-check " onclick="cycleStatus(&#39;mpfus3oylddm2&#39;)"></div>
-      <div class="task-body">
-        <div class="task-title">Nota de Câmara de Jundiá, Vila Flor e Tibau</div>
-        <div class="task-meta">
-          <span class="task-folder">AD Telecom</span>
-          <span class="task-date ">15/08/2026</span>
-          <span class="task-recurrence">↻ Mensal</span>
-          <span class="badge-priority badge-media">Média</span>
-        </div>
-        <div style="font-size:11px;color:var(--text-light);margin-top:4px">Todo dia 15</div>
-        
-      </div>
-    </div></div>
-    <div class="section-panel" id="panel-notas" style="display:none"></div>
-
-  <!-- DADOS IMPORTANTES -->
-  <div class="section-panel" id="panel-dados">
-    <div class="page-header">
-      <div>
-        <div class="page-title">Dados Importantes</div>
-        <div class="page-subtitle">Planilhas, documentos e arquivos de referência por cliente</div>
-      </div>
-    </div>
-    <div id="dadosContent"></div>
+<div id="main">
+  <div id="printHeader">
+    <h2>Gestão Plena — Checklist do Dia</h2>
+    <p id="printDate"></p>
   </div>
-</main>
+  <div class="topbar">
+    <div>
+      <h2 id="viewTitle">Todas as Tarefas</h2>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" onclick="printChecklist()">🖨 Checklist do Dia</button>
+      <button class="btn-ghost" onclick="openBulkModal()">+ Rotina em Lote</button>
+      <button class="btn-primary" onclick="openTaskModal()">+ Nova Tarefa</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="num" id="statPendentes">0</div><div class="lbl">Pendentes</div></div>
+    <div class="stat-card"><div class="num" id="statAndamento">0</div><div class="lbl">Em Andamento</div></div>
+    <div class="stat-card"><div class="num" id="statConcluidas">0</div><div class="lbl">Concluídas</div></div>
+    <div class="stat-card soon"><div class="num" id="statEmBreve">0</div><div class="lbl">Vence em breve</div></div>
+    <div class="stat-card warn"><div class="num" id="statVencidas">0</div><div class="lbl">Vencidas</div></div>
+  </div>
+
+  <div class="filter-row">
+    <div class="tabs">
+      <button class="tab active" data-status="todas" onclick="setStatusFilter('todas')">Todas</button>
+      <button class="tab" data-status="pendente" onclick="setStatusFilter('pendente')">Pendentes</button>
+      <button class="tab" data-status="andamento" onclick="setStatusFilter('andamento')">Em Andamento</button>
+      <button class="tab" data-status="concluida" onclick="setStatusFilter('concluida')">Concluídas</button>
+    </div>
+    <div class="search-box">🔍 <input id="searchInput" placeholder="Buscar tarefa..." oninput="render()"></div>
+  </div>
+
+  <div id="taskList"></div>
 </div>
 
-<!-- PAINEL LATERAL NOTAS -->
-<aside class="notas-panel" id="notasPanel">
-  <div class="notas-panel-header">
-    <div class="notas-panel-title">🗒️ Notas Rápidas</div>
-    <button class="notas-panel-add" onclick="addNota()">+ Nova</button>
-  </div>
-  <div class="notas-panel-body" id="notasGrid"><div class="nota-card color-5" data-nota-id="mpos1lgxhnwed">
-      <div class="color-picker" id="cp-mpos1lgxhnwed">
-        <div class="color-dot" style="background:#FFF8DC" onclick="changeNotaColor(&#39;mpos1lgxhnwed&#39;,&#39;color-1&#39;,this)"></div><div class="color-dot" style="background:#FEF4F4" onclick="changeNotaColor(&#39;mpos1lgxhnwed&#39;,&#39;color-2&#39;,this)"></div><div class="color-dot" style="background:#F0F4FF" onclick="changeNotaColor(&#39;mpos1lgxhnwed&#39;,&#39;color-3&#39;,this)"></div><div class="color-dot" style="background:#F0FFF4" onclick="changeNotaColor(&#39;mpos1lgxhnwed&#39;,&#39;color-4&#39;,this)"></div><div class="color-dot selected" style="background:#FFF0F5" onclick="changeNotaColor(&#39;mpos1lgxhnwed&#39;,&#39;color-5&#39;,this)"></div>
-      </div>
-      <div class="nota-date">qua., 27 de mai. de 2026</div>
-      <textarea class="nota-text" id="nt-mpos1lgxhnwed" onblur="saveNotaText(&#39;mpos1lgxhnwed&#39;,this.value)">FAZER SISTEMA QUE FAÇA A FUNÇÃO DO CASH TRACK</textarea>
-      <div class="nota-actions">
-        <button class="nota-btn" title="Excluir" onclick="deleteNota(&#39;mpos1lgxhnwed&#39;)">🗑️</button>
-      </div>
-    </div><div class="nota-card color-2" data-nota-id="mpl4edsweyjsi">
-      <div class="color-picker" id="cp-mpl4edsweyjsi">
-        <div class="color-dot" style="background:#FFF8DC" onclick="changeNotaColor(&#39;mpl4edsweyjsi&#39;,&#39;color-1&#39;,this)"></div><div class="color-dot selected" style="background:#FEF4F4" onclick="changeNotaColor(&#39;mpl4edsweyjsi&#39;,&#39;color-2&#39;,this)"></div><div class="color-dot" style="background:#F0F4FF" onclick="changeNotaColor(&#39;mpl4edsweyjsi&#39;,&#39;color-3&#39;,this)"></div><div class="color-dot" style="background:#F0FFF4" onclick="changeNotaColor(&#39;mpl4edsweyjsi&#39;,&#39;color-4&#39;,this)"></div><div class="color-dot" style="background:#FFF0F5" onclick="changeNotaColor(&#39;mpl4edsweyjsi&#39;,&#39;color-5&#39;,this)"></div>
-      </div>
-      <div class="nota-date">seg., 25 de mai. de 2026</div>
-      <textarea class="nota-text" id="nt-mpl4edsweyjsi" onblur="saveNotaText(&#39;mpl4edsweyjsi&#39;,this.value)">FMR: 3 CORAÇÕES
-Conversores, eletroima - troca de camera (3 serviços)</textarea>
-      <div class="nota-actions">
-        <button class="nota-btn" title="Excluir" onclick="deleteNota(&#39;mpl4edsweyjsi&#39;)">🗑️</button>
-      </div>
-    </div><div class="nota-card color-1" data-nota-id="mpkhoir6tymta">
-      <div class="color-picker" id="cp-mpkhoir6tymta">
-        <div class="color-dot selected" style="background:#FFF8DC" onclick="changeNotaColor(&#39;mpkhoir6tymta&#39;,&#39;color-1&#39;,this)"></div><div class="color-dot" style="background:#FEF4F4" onclick="changeNotaColor(&#39;mpkhoir6tymta&#39;,&#39;color-2&#39;,this)"></div><div class="color-dot" style="background:#F0F4FF" onclick="changeNotaColor(&#39;mpkhoir6tymta&#39;,&#39;color-3&#39;,this)"></div><div class="color-dot" style="background:#F0FFF4" onclick="changeNotaColor(&#39;mpkhoir6tymta&#39;,&#39;color-4&#39;,this)"></div><div class="color-dot" style="background:#FFF0F5" onclick="changeNotaColor(&#39;mpkhoir6tymta&#39;,&#39;color-5&#39;,this)"></div>
-      </div>
-      <div class="nota-date">dom., 24 de mai. de 2026</div>
-      <textarea class="nota-text" id="nt-mpkhoir6tymta" onblur="saveNotaText(&#39;mpkhoir6tymta&#39;,this.value)">Organizar agenda da semana - Por empresa.</textarea>
-      <div class="nota-actions">
-        <button class="nota-btn" title="Excluir" onclick="deleteNota(&#39;mpkhoir6tymta&#39;)">🗑️</button>
-      </div>
-    </div></div>
-</aside>
-<button class="notas-toggle" id="notasToggle" onclick="toggleNotasPanel()" title="Notas Rápidas">Notas</button>
+<div id="notesPanel">
+  <div class="notes-panel-header"><h3>Notas Rápidas</h3></div>
+  <button type="button" class="notes-add-link" onclick="addNote()">+ Adicionar nota</button>
+  <div class="notes-list" id="notesGrid"></div>
+</div>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modalOverlay">
+<div class="overlay" id="taskOverlay">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">Nova Tarefa</div>
-    <div class="form-group">
-      <label class="form-label">Título da Tarefa *</label>
-      <input class="form-input" id="fTitle" placeholder="Descreva a tarefa...">
-    </div>
-    <div class="form-row">
+    <h3 id="modalTitle">Nova Tarefa</h3>
+    <form id="taskForm" onsubmit="saveTask(event)">
+      <input type="hidden" id="fId">
       <div class="form-group">
-        <label class="form-label">Cliente / Pasta *</label>
-        <select class="form-select" id="fFolder"></select>
+        <label>Título da tarefa</label>
+        <input id="fTitle" required placeholder="Ex: Enviar pagamentos do dia">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cliente</label>
+          <select id="fFolder"></select>
+        </div>
+        <div class="form-group">
+          <label>Prioridade</label>
+          <select id="fPriority">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Média</option>
+            <option value="baixa">Baixa</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status</label>
+          <select id="fStatus">
+            <option value="pendente">Pendente</option>
+            <option value="andamento">Em Andamento</option>
+            <option value="concluida">Concluída</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data de vencimento</label>
+          <input type="date" id="fDueDate" required>
+        </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Prioridade</label>
-        <select class="form-select" id="fPriority">
-          <option value="media">Média</option>
-          <option value="alta">Alta</option>
-          <option value="baixa">Baixa</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Prazo</label>
-        <input class="form-input" type="date" id="fDate">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Recorrência</label>
-        <select class="form-select" id="fRecurrence">
-          <option value="">Sem recorrência</option>
+        <label>Recorrência</label>
+        <select id="fRecurrence" onchange="onRecurrenceChange()">
+          <option value="">Não se repete</option>
           <option value="diaria">Diária (dias úteis)</option>
           <option value="semanal">Semanal</option>
           <option value="quinzenal">Quinzenal</option>
-          <option value="mensal">Mensal</option>
-          <option value="mensal_dia_util">Mensal (dia útil)</option>
+          <option value="mensal">Mensal (mesmo dia)</option>
+          <option value="mensal_dia_util">Mensal (N-ésimo dia útil)</option>
         </select>
       </div>
-    </div>
-    <div class="form-group" id="recurrenceDayGroup" style="display:none">
-      <label class="form-label">Dia da semana (para recorrência semanal)</label>
-      <select class="form-select" id="fRecurrenceDay">
-        <option value="1">Segunda-feira</option>
-        <option value="2">Terça-feira</option>
-        <option value="3">Quarta-feira</option>
-        <option value="4">Quinta-feira</option>
-        <option value="5">Sexta-feira</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Status</label>
-      <div class="status-selector">
-        <button type="button" class="status-opt" id="sopt-pendente" onclick="selectStatus(&#39;pendente&#39;)">⭕ Pendente</button>
-        <button type="button" class="status-opt" id="sopt-em_andamento" onclick="selectStatus(&#39;em_andamento&#39;)">🔄 Em Andamento</button>
-        <button type="button" class="status-opt" id="sopt-concluida" onclick="selectStatus(&#39;concluida&#39;)">✅ Concluída</button>
+      <div class="form-group" id="recDayGroup" style="display:none">
+        <label>Dia da semana</label>
+        <select id="fRecurrenceDay">
+          <option value="1">Segunda-feira</option>
+          <option value="2">Terça-feira</option>
+          <option value="3">Quarta-feira</option>
+          <option value="4">Quinta-feira</option>
+          <option value="5">Sexta-feira</option>
+          <option value="0">Domingo</option>
+          <option value="6">Sábado</option>
+        </select>
+      </div>
+      <div class="form-group" id="recNthGroup" style="display:none">
+        <label>Qual dia útil do mês (ex: 5 = 5º dia útil)</label>
+        <input type="number" id="fRecurrenceNth" min="1" max="23" value="5">
+      </div>
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea id="fNotes" rows="2" placeholder="Opcional"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-danger-ghost" id="deleteBtn" style="display:none" onclick="deleteCurrentTask()">Excluir</button>
+        <button type="button" class="btn-ghost" onclick="closeTaskModal()">Cancelar</button>
+        <button type="submit" class="btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="syncOverlay">
+  <div class="modal" style="max-width:520px">
+    <h3>Sincronização entre aparelhos</h3>
+    <div id="syncConnectedView" style="display:none">
+      <p style="font-size:13px;color:var(--text-soft)">Este aparelho está conectado. Use o mesmo código nos outros aparelhos.</p>
+      <div class="sync-code-box">
+        <div class="code" id="syncCodeDisplay"></div>
+        <button class="btn-ghost" style="margin-top:10px" onclick="copySyncCode()">Copiar código</button>
+      </div>
+      <div class="sync-status">
+        <span class="sync-dot" id="syncStatusDot"></span>
+        <span id="syncStatusText">Conectado</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-danger-ghost" onclick="disconnectSync()">Desconectar este aparelho</button>
+        <button class="btn-primary" onclick="closeSyncModal()">Fechar</button>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Observações</label>
-      <textarea class="form-textarea" id="fNotes" placeholder="Detalhes, links, anotações..."></textarea>
-    </div>
-    <div class="form-group" id="commentsSection" style="display:none">
-      <label class="form-label">Comentários / Andamento</label>
-      <div class="comment-list" id="commentList"></div>
-      <div class="comment-input-area">
-        <textarea id="commentInput" placeholder="Adicione um comentário ou anotação de andamento..."></textarea>
-        <button class="btn-comment" onclick="addComment()">Enviar</button>
+    <div id="syncSetupView">
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Conecte seus aparelhos pra ver as mesmas tarefas em todos eles.</p>
+      <div class="form-group">
+        <label>Primeiro aparelho — gerar código novo</label>
+        <p style="font-size:12px;color:var(--text-soft);margin:0 0 8px">Use isso no aparelho que já tem suas tarefas cadastradas.</p>
+        <button class="btn-primary" style="width:100%;justify-content:center" onclick="generateSyncCode()">Gerar código de sincronização</button>
       </div>
-    </div>
-    <div class="form-group" id="attachmentsSection" style="display:none">
-      <label class="form-label">Anexos</label>
-      <div class="attachment-area">
-        <div class="attachment-list" id="attachmentList"></div>
-        <button type="button" class="att-upload-btn" onclick="document.getElementById(&#39;attFileInput&#39;).click()">
-          📎 Anexar arquivo (boleto, comprovante...)
-        </button>
-        <input type="file" id="attFileInput" multiple="" onchange="handleFileAttach(this)">
+      <div class="divider-or">ou</div>
+      <div class="form-group">
+        <label>Já tenho um código — conectar este aparelho</label>
+        <p style="font-size:12px;color:var(--text-soft);margin:0 0 8px">⚠️ Isso substitui os dados deste aparelho pelos da nuvem.</p>
+        <input type="text" id="syncCodeInput" placeholder="Cole o código aqui">
+        <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="connectWithSyncCode()">Conectar</button>
       </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-danger" id="btnDelete" onclick="deleteTask()" style="display:none;margin-right:auto">🗑 Excluir</button>
-      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn-primary" onclick="saveTask()">Salvar Tarefa</button>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeSyncModal()">Fechar</button>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast" style="display: none;">33 tarefa(s) sincronizada(s) com o Google Agenda!</div>
+<div class="toast" id="toast"></div>
 
-<script src="./Gestão Plena — Gerenciador_files/cb=gapi(1).loaded_0" async=""></script><script>
-// ========== CONFIG ==========
-const SHEET_NAME = 'Tarefas';
-const FILE_NAME = 'GestaoPlenaTarefas.json';
+<div class="overlay" id="bulkOverlay">
+  <div class="modal" style="max-width:640px">
+    <h3>Nova Rotina em Lote</h3>
+    <p style="font-size:12px;color:var(--text-soft);margin-top:-12px;margin-bottom:16px;">Cadastre várias tarefas do mesmo cliente e recorrência de uma vez.</p>
+    <form id="bulkForm" onsubmit="saveBulk(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cliente</label>
+          <select id="bFolder"></select>
+        </div>
+        <div class="form-group">
+          <label>Prioridade padrão</label>
+          <select id="bPriority">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Média</option>
+            <option value="baixa">Baixa</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Recorrência (aplicada a todos os itens abaixo)</label>
+        <select id="bRecurrence" onchange="onBulkRecurrenceChange()">
+          <option value="">Não se repete</option>
+          <option value="diaria">Diária (dias úteis)</option>
+          <option value="semanal">Semanal</option>
+          <option value="quinzenal">Quinzenal</option>
+          <option value="mensal">Mensal (mesmo dia)</option>
+          <option value="mensal_dia_util">Mensal (N-ésimo dia útil)</option>
+        </select>
+      </div>
+      <div class="form-group" id="bRecDayGroup" style="display:none">
+        <label>Dia da semana</label>
+        <select id="bRecurrenceDay">
+          <option value="1">Segunda-feira</option>
+          <option value="2">Terça-feira</option>
+          <option value="3">Quarta-feira</option>
+          <option value="4">Quinta-feira</option>
+          <option value="5">Sexta-feira</option>
+          <option value="0">Domingo</option>
+          <option value="6">Sábado</option>
+        </select>
+      </div>
+      <div class="form-group" id="bRecNthGroup" style="display:none">
+        <label>Qual dia útil do mês</label>
+        <input type="number" id="bRecurrenceNth" min="1" max="23" value="5">
+      </div>
+      <div class="form-group">
+        <label>Itens da rotina (título + primeira data de vencimento)</label>
+        <div id="bulkRows"></div>
+        <button type="button" class="btn-ghost" style="margin-top:4px" onclick="addBulkRow()">+ Adicionar item</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="closeBulkModal()">Cancelar</button>
+        <button type="submit" class="btn-primary">Criar Tarefas</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-const FOLDERS = [
-  'FMR Soluções',
-  'Gracy Ambiental',
-  'Lord Chicken e Burguers',
-  'Mobile Collection',
-  'Panobianco',
-  'Nutra',
-  'AD Telecom',
-  'Ki-Delícia',
-  'Gestão Plena — Documentos',
-  'Gestão Plena — Administrativo',
-  'Gestão Plena — Financeiro',
-  'Gestão Plena — Comercial',
-  'Gestão Plena — Fornecedores',
-];
-
-let CLIENTS = [
-  'FMR Soluções',
-  'Gracy Ambiental',
-  'Lord Chicken e Burguers',
-  'Mobile Collection',
-  'Panobianco',
-  'Nutra',
-  'AD Telecom',
-  'Ki-Delícia',
-];
-
-let GP_FOLDERS = [
-  'Gestão Plena — Documentos',
-  'Gestão Plena — Administrativo',
-  'Gestão Plena — Financeiro',
-  'Gestão Plena — Comercial',
-  'Gestão Plena — Fornecedores',
-];
-
-// ========== STATE ==========
+<script>
+// ========== ESTADO ==========
+const STORAGE_KEY = 'gestaoplena_gerenciador_v2';
+const SYNC_CODE_KEY = 'gestaoplena_sync_code';
 let tasks = [];
-let currentFolder = 'todas';
-let currentFilter = 'todas';
-let currentSearch = '';
+let folders = [];
+let notes = [];
+let sections = [];
+let syncCode = null;
+let syncTasksUnsub = null;
+let syncMetaUnsub = null;
+let applyingRemoteUpdate = false; // evita loop de escrita ao receber dados remotos
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLFJtnGbPm4n6SqHt7ZRfVG2mKKSTkVL8",
+  authDomain: "gerenciador-gestao-plena.firebaseapp.com",
+  projectId: "gerenciador-gestao-plena",
+  storageBucket: "gerenciador-gestao-plena.firebasestorage.app",
+  messagingSenderId: "670671521887",
+  appId: "1:670671521887:web:9dab3da3ef3c96e4b5f3ea"
+};
+let db = null;
+try{
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+}catch(e){
+  console.error('Firebase não pôde ser inicializado:', e);
+}
+let currentView = 'todas';   // todas | hoje | vencidas | <nome do cliente>
+let currentStatusFilter = 'todas';
 let editingId = null;
-let driveFileId = null;
-let syncTimeout = null;
 
-// ========== INITIAL TASKS ==========
-const INITIAL_TASKS = [
-  {id:uid(),folder:'FMR Soluções',title:'Solicitação de informações de ponto da semana anterior',priority:'media',status:'pendente',recurrence:'semanal',recurrenceDay:'1',dueDate:nextWeekday(1),notes:''},
-  {id:uid(),folder:'FMR Soluções',title:'Conciliação da semana anterior para conferência',priority:'media',status:'pendente',recurrence:'semanal',recurrenceDay:'1',dueDate:nextWeekday(1),notes:''},
-  {id:uid(),folder:'FMR Soluções',title:'Verificar se tem expediente no sábado',priority:'media',status:'pendente',recurrence:'semanal',recurrenceDay:'3',dueDate:nextWeekday(3),notes:'Confirmar com equipe FMR'},
-  {id:uid(),folder:'FMR Soluções',title:'Pagamento Brisa',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(15),notes:'Todo dia 15'},
-  {id:uid(),folder:'FMR Soluções',title:'Pagamento Gestão Plena',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(15),notes:'Todo dia 15'},
-  {id:uid(),folder:'FMR Soluções',title:'Pagamento Brisa',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(20),notes:'Todo dia 20'},
-  {id:uid(),folder:'FMR Soluções',title:'Pagamento Aluguel',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(20),notes:'Todo dia 20'},
-  {id:uid(),folder:'FMR Soluções',title:'Pagamento Alares',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(22),notes:'Todo dia 22'},
-  {id:uid(),folder:'FMR Soluções',title:'Links da Motorola',priority:'media',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(1),notes:'Todo dia 01'},
-  {id:uid(),folder:'FMR Soluções',title:'Faturamento contratos mensais',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(28),notes:'Todo dia 28'},
-  {id:uid(),folder:'FMR Soluções',title:'Reunião mensal de resultados',priority:'alta',status:'pendente',recurrence:'mensal_dia_util',dueDate:nthBusinessDay(5),notes:'Todo 5º dia útil do mês'},
-  {id:uid(),folder:'Lord Chicken e Burguers',title:'Reunião mensal de resultados',priority:'media',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(10),notes:'Todo dia 10'},
-  {id:uid(),folder:'Lord Chicken e Burguers',title:'Solicitar extrato para apuração do Simples',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(5),notes:'Todo dia 05'},
-  {id:uid(),folder:'Panobianco',title:'Envio de informações para fechamento de folha',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(26),notes:'Todo dia 26'},
-  {id:uid(),folder:'Panobianco',title:'Conferência de pontos',priority:'media',status:'pendente',recurrence:'semanal',recurrenceDay:'2',dueDate:nextWeekday(2),notes:'Toda terça-feira'},
-  {id:uid(),folder:'Panobianco',title:'Pagamento de INSS e FGTS',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(20),notes:'Todo dia 20 — antecipar se cair em fds/feriado'},
-  {id:uid(),folder:'Panobianco',title:'Pagamento de Folha',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(30),notes:'Todo dia 30 — antecipar se cair em fds/feriado'},
-  {id:uid(),folder:'Nutra',title:'Envio de informações para fechamento de folha',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(26),notes:'Todo dia 26'},
-  {id:uid(),folder:'Nutra',title:'Conferência de pontos',priority:'media',status:'pendente',recurrence:'semanal',recurrenceDay:'2',dueDate:nextWeekday(2),notes:'Toda terça-feira'},
-  {id:uid(),folder:'Nutra',title:'Pagamento de INSS e FGTS',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(20),notes:'Todo dia 20 — antecipar se cair em fds/feriado'},
-  {id:uid(),folder:'Nutra',title:'Pagamento de Folha',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(30),notes:'Todo dia 30 — antecipar se cair em fds/feriado'},
-  {id:uid(),folder:'Ki-Delícia',title:'Emitir guia do MEI',priority:'alta',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(10),notes:'Todo dia 10'},
-  {id:uid(),folder:'AD Telecom',title:'Enviar pagamentos do dia, baixas dos caixas da loja e atualização no grupo financeiro sobre valor em caixa',priority:'alta',status:'pendente',recurrence:'diaria',dueDate:today(),notes:'Todos os dias úteis'},
-  {id:uid(),folder:'AD Telecom',title:'Nota de Câmara de Jundiá, Vila Flor e Tibau',priority:'media',status:'pendente',recurrence:'mensal',dueDate:nextMonthDay(15),notes:'Todo dia 15'},
-];
-
-// ========== DATE HELPERS ==========
-function toLocalISO(d) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+// ========== DATAS (sempre horário local, nunca UTC) ==========
+function toLocalISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
 }
-function today() {
-  return toLocalISO(new Date());
+function today(){ return toLocalISO(new Date()); }
+function isToday(str){ return str === today(); }
+function isOverdue(str, status){ return status !== 'concluida' && str && str < today(); }
+function daysUntil(str){
+  const d = parseLocalDate(str);
+  const t = parseLocalDate(today());
+  return Math.round((d - t) / 86400000);
 }
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+function isSoon(str, status){
+  if(status === 'concluida' || !str) return false;
+  const diff = daysUntil(str);
+  return diff === 1 || diff === 2;
 }
-function nextWeekday(dow) {
-  const d = new Date();
-  const diff = (dow - d.getDay() + 7) % 7 || 7;
-  d.setDate(d.getDate() + diff);
-  return toLocalISO(d);
-}
-function nextMonthDay(day) {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = d.getMonth();
-  const target = new Date(year, month, day);
-  if (target <= d) target.setMonth(target.getMonth() + 1);
-  return toLocalISO(target);
-}
-function nthBusinessDay(n) {
-  const d = new Date();
-  d.setDate(1);
-  let count = 0;
-  while (count < n) {
-    if (d.getDay() !== 0 && d.getDay() !== 6) count++;
-    if (count < n) d.setDate(d.getDate() + 1);
-  }
-  if (d < new Date()) {
-    d.setMonth(d.getMonth() + 1);
-    d.setDate(1);
-    count = 0;
-    while (count < n) {
-      if (d.getDay() !== 0 && d.getDay() !== 6) count++;
-      if (count < n) d.setDate(d.getDate() + 1);
-    }
-  }
-  return toLocalISO(d);
-}
-function formatDate(str) {
-  if (!str) return '';
+function formatDate(str){
+  if(!str) return '';
   const [y,m,d] = str.split('-');
   return `${d}/${m}/${y}`;
 }
-function isToday(str) { return str === today(); }
-function isOverdue(str) { return str && str < today(); }
-function recurrenceLabel(r) {
-  const map = {diaria:'Diária',semanal:'Semanal',quinzenal:'Quinzenal',mensal:'Mensal',mensal_dia_util:'Mensal (dia útil)'};
-  return map[r] || '';
-}
+function parseLocalDate(str){ return new Date(str + 'T12:00:00'); }
 
-// ========== VERIFICAÇÃO DE LOCALSTORAGE ==========
-let storageAvailable = false;
+function isBusinessDay(d){ return d.getDay() !== 0 && d.getDay() !== 6; }
 
-function checkStorage() {
-  try {
-    localStorage.setItem('__gp_test__', '1');
-    localStorage.removeItem('__gp_test__');
-    storageAvailable = true;
-    document.getElementById('storageAlert').classList.remove('show');
-    document.getElementById('saveIndicator').className = 'save-indicator ok';
-    document.getElementById('saveIndicator').textContent = '✓ Dados salvos';
-  } catch(e) {
-    storageAvailable = false;
-    document.getElementById('storageAlert').classList.add('show');
-    document.getElementById('saveIndicator').className = 'save-indicator error';
-    document.getElementById('saveIndicator').textContent = '✗ Salvamento bloqueado';
-    // Empurra o conteúdo para baixo do alerta
-    document.querySelector('.main').style.marginTop = '48px';
-    document.querySelector('.sidebar').style.paddingTop = '60px';
-  }
-}
-
-function showStorageHelp() {
-  alert(
-    '🔧 Como liberar o armazenamento local no Chrome:\n\n' +
-    '1. Clique no ícone de cadeado (🔒) à esquerda do endereço\n' +
-    '2. Clique em "Configurações do site"\n' +
-    '3. Em "Dados do site", selecione "Permitir"\n' +
-    '4. Recarregue a página (F5)\n\n' +
-    'Se não funcionar, verifique:\n' +
-    'Configurações do Chrome → Privacidade → Cookies → Permitir cookies de terceiros'
-  );
-}
-
-// ========== EXPORTAR / IMPORTAR BACKUP ==========
-function exportBackup() {
-  if (tasks.length === 0) { showToast('Nenhuma tarefa para exportar'); return; }
-  const data = JSON.stringify({ tasks, exportedAt: new Date().toLocaleString('pt-BR') }, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const date = toLocalISO(new Date());
-  a.href = url;
-  a.download = `gestaoplena_backup_${date}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('✅ Backup exportado com sucesso!');
-}
-
-function importBackup(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!data.tasks || !Array.isArray(data.tasks)) throw new Error('Formato inválido');
-      if (!confirm(`Importar ${data.tasks.length} tarefa(s)? As tarefas atuais serão substituídas.`)) return;
-      tasks = data.tasks;
-      saveToDrive();
-      advanceRecurringDates();
-      render();
-      showToast(`✅ ${tasks.length} tarefa(s) importada(s)!`);
-    } catch(err) {
-      showToast('❌ Arquivo inválido. Use um backup exportado pelo gerenciador.');
+function nextOccurrence(task){
+  // Calcula a próxima data de vencimento a partir da data atual da tarefa
+  let d = parseLocalDate(task.dueDate);
+  if(task.recurrence === 'diaria'){
+    d.setDate(d.getDate()+1);
+    while(!isBusinessDay(d)) d.setDate(d.getDate()+1);
+  } else if(task.recurrence === 'semanal'){
+    d.setDate(d.getDate()+7);
+  } else if(task.recurrence === 'quinzenal'){
+    d.setDate(d.getDate()+14);
+  } else if(task.recurrence === 'mensal'){
+    const day = d.getDate();
+    d.setMonth(d.getMonth()+1, 1); // vai pro dia 1 do próximo mês primeiro (evita overflow)
+    const lastDay = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    d.setDate(Math.min(day, lastDay)); // usa o mesmo dia, ou o último dia do mês se ele não existir
+  } else if(task.recurrence === 'mensal_dia_util'){
+    const nth = parseInt(task.recurrenceNth,10) || 5;
+    d.setMonth(d.getMonth()+1);
+    d.setDate(1);
+    let count = 0;
+    while(count < nth){
+      if(isBusinessDay(d)) count++;
+      if(count < nth) d.setDate(d.getDate()+1);
     }
-  };
-  reader.readAsText(file);
-  input.value = '';
+  }
+  return toLocalISO(d);
 }
 
+// Realinha uma data semanal para o dia da semana configurado, sem retroceder
+function alignToWeekday(dateStr, targetDow){
+  const d = parseLocalDate(dateStr);
+  const diff = (targetDow - d.getDay() + 7) % 7;
+  if(diff !== 0) d.setDate(d.getDate()+diff);
+  return toLocalISO(d);
+}
 
-// Ao abrir o sistema, verifica todas as tarefas recorrentes com datas vencidas
-// e avança a data para a próxima ocorrência correta (sem alterar o status).
-function advanceRecurringDates() {
+// Avança tarefas recorrentes vencidas até a próxima ocorrência futura/atual
+function advanceOverdueRecurring(){
   const tod = today();
   let changed = false;
-
-  tasks.forEach(t => {
-    // Só processa tarefas recorrentes, com data definida e não concluídas
-    if (!t.recurrence || !t.dueDate || t.status === 'concluida') return;
-    if (t.dueDate >= tod) return; // ainda no prazo ou futura, não mexe
-
-    let nextDate = t.dueDate;
-    let safety = 0; // evita loop infinito
-
-    while (nextDate < tod && safety < 400) {
-      safety++;
-
-      if (t.recurrence === 'diaria') {
-        const d = new Date(nextDate + 'T12:00:00');
-        d.setDate(d.getDate() + 1);
-        // Pula fins de semana
-        while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
-        nextDate = toLocalISO(d);
-
-      } else if (t.recurrence === 'semanal') {
-        const d = new Date(nextDate + 'T12:00:00');
-        d.setDate(d.getDate() + 7);
-        nextDate = toLocalISO(d);
-
-      } else if (t.recurrence === 'quinzenal') {
-        const d = new Date(nextDate + 'T12:00:00');
-        d.setDate(d.getDate() + 14);
-        nextDate = toLocalISO(d);
-
-      } else if (t.recurrence === 'mensal') {
-        const d = new Date(nextDate + 'T12:00:00');
-        const day = d.getDate();
-        d.setMonth(d.getMonth() + 1);
-        d.setDate(day);
-        nextDate = toLocalISO(d);
-
-      } else if (t.recurrence === 'mensal_dia_util') {
-        const d = new Date(nextDate + 'T12:00:00');
-        d.setMonth(d.getMonth() + 1);
-        d.setDate(1);
-        const nth = 5;
-        let count = 0;
-        while (count < nth) {
-          if (d.getDay() !== 0 && d.getDay() !== 6) count++;
-          if (count < nth) d.setDate(d.getDate() + 1);
-        }
-        nextDate = toLocalISO(d);
-
-      } else {
-        break; // recorrência desconhecida, sai do loop
+  tasks.forEach(t=>{
+    if(!t.recurrence || t.status === 'concluida') return;
+    // Realinha semanal para o dia certo, caso tenha desviado
+    if(t.recurrence === 'semanal' && t.recurrenceDay !== undefined && t.recurrenceDay !== ''){
+      const targetDow = parseInt(t.recurrenceDay,10);
+      const d = parseLocalDate(t.dueDate);
+      if(d.getDay() !== targetDow){
+        t.dueDate = alignToWeekday(t.dueDate, targetDow);
+        changed = true;
       }
     }
-
-    if (nextDate !== t.dueDate) {
-      t.dueDate = nextDate;
+    let safety = 0;
+    while(t.dueDate < tod && safety < 400){
+      t.dueDate = nextOccurrence(t);
+      safety++;
       changed = true;
     }
   });
+  if(changed) saveData();
+}
 
-  // Salva no localStorage se houve alteração
-  if (changed) {
-    localStorage.setItem('gestaoplena_tasks_backup', JSON.stringify(tasks));
+// ========== PERSISTÊNCIA ==========
+function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks, folders, notes, sections, savedAt: new Date().toISOString()}));
+    setSaveBadge('✓ Salvo às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){
+    setSaveBadge('⚠ Erro ao salvar');
   }
 }
+function loadData(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const DEFAULT_FOLDERS = [
+    'Mais Ambiental / Gracy Ambiental',
+    'FMR Soluções',
+    'AD Telecom',
+    'Nutra',
+    'R.O. Academia (Panobianco)',
+    'Lord Chicken & Burgers',
+    'Mobile Collection',
+    'Ki-Delícia',
+    "Manias Burg's"
+  ];
+  const DEFAULT_SECTIONS = ['Documentos','Administrativo','Financeiro','Comercial','Fornecedores'];
+  if(!raw){
+    tasks = [];
+    folders = DEFAULT_FOLDERS.slice();
+    notes = [];
+    sections = DEFAULT_SECTIONS.slice();
+    saveData();
+    return;
+  }
+  try{
+    const parsed = JSON.parse(raw);
+    tasks = Array.isArray(parsed.tasks) ? parsed.tasks : [];
+    folders = Array.isArray(parsed.folders) && parsed.folders.length ? parsed.folders : DEFAULT_FOLDERS.slice();
+    notes = Array.isArray(parsed.notes) ? parsed.notes : [];
+    sections = Array.isArray(parsed.sections) && parsed.sections.length ? parsed.sections : DEFAULT_SECTIONS.slice();
+  }catch(e){
+    tasks = [];
+    folders = DEFAULT_FOLDERS.slice();
+    notes = [];
+    sections = DEFAULT_SECTIONS.slice();
+  }
+}
+function setSaveBadge(text){
+  document.getElementById('saveBadge').textContent = text;
+}
 
-// ========== DRIVE SYNC ==========
-async function loadFromDrive() {
-  try {
-    const resp = await fetch('/api/drive/search?name=' + encodeURIComponent(FILE_NAME));
-    if (resp.ok) {
-      const data = await resp.json();
-      if (data.fileId) {
-        driveFileId = data.fileId;
-        const content = await fetch('/api/drive/read?fileId=' + driveFileId);
-        if (content.ok) {
-          const json = await content.json();
-          tasks = json.tasks || [];
-          render();
-          setSyncBadge('✓ Sincronizado');
-          return;
-        }
-      }
+function exportData(){
+  const data = JSON.stringify({tasks, folders, notes, sections, exportedAt: new Date().toLocaleString('pt-BR')}, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gestaoplena_backup_${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup exportado');
+}
+function importData(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!Array.isArray(parsed.tasks)) throw new Error('formato inválido');
+      if(!confirm(`Importar ${parsed.tasks.length} tarefa(s)? Isso substitui os dados atuais.`)) return;
+      tasks = parsed.tasks;
+      folders = Array.isArray(parsed.folders) ? parsed.folders : folders;
+      notes = Array.isArray(parsed.notes) ? parsed.notes : notes;
+      sections = Array.isArray(parsed.sections) ? parsed.sections : sections;
+      saveData();
+      renderAll();
+      showToast('Dados importados com sucesso');
+    }catch(e){
+      alert('Não foi possível ler esse arquivo. Confira se é um backup exportado por este gerenciador.');
     }
-  } catch(e) {}
-  tasks = INITIAL_TASKS;
-  render();
-  saveToDrive();
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
 }
 
-async function saveToDrive() {
-  setSyncBadge('⟳ Salvando...');
-  const ind = document.getElementById('saveIndicator');
-  if (ind) { ind.className = 'save-indicator saving'; ind.textContent = '⟳ Salvando...'; }
-  clearTimeout(syncTimeout);
-  syncTimeout = setTimeout(async () => {
-    try {
-      if (!storageAvailable) throw new Error('bloqueado');
-      localStorage.setItem('gestaoplena_tasks_backup', JSON.stringify(tasks));
-      setSyncBadge('✓ Salvo localmente');
-      if (ind) { ind.className = 'save-indicator ok'; ind.textContent = '✓ Dados salvos'; }
-    } catch(e) {
-      setSyncBadge('⚠ Não salvo!');
-      if (ind) { ind.className = 'save-indicator error'; ind.textContent = '✗ Não foi salvo!'; }
-      document.getElementById('storageAlert').classList.add('show');
-    }
-  }, 800);
+// ========== FOLDERS (clientes) ==========
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+const CLIENT_COLORS = {
+  'Mais Ambiental / Gracy Ambiental': '#2E8B57',
+  'FMR Soluções': '#1E7BC4',
+  'AD Telecom': '#C9A96E',
+  'Nutra': '#8B1A1A',
+  'R.O. Academia (Panobianco)': '#E8450A',
+  'Lord Chicken & Burgers': '#F5820A',
+  'Mobile Collection': '#14213D',
+  'Ki-Delícia': '#A64D79',
+  "Manias Burg's": '#8B6F47'
+};
+const FALLBACK_PALETTE = ['#8C6E63','#7C8B99','#A98467','#6B8E7F','#9C7C82','#7E99A3','#A68A64','#8A7091'];
+function getFolderColor(name){
+  if(CLIENT_COLORS[name]) return CLIENT_COLORS[name];
+  if(sections.includes(name)) return '#C9A96E';
+  let hash = 0;
+  for(let i=0;i<name.length;i++){ hash = name.charCodeAt(i) + ((hash<<5)-hash); }
+  return FALLBACK_PALETTE[Math.abs(hash) % FALLBACK_PALETTE.length];
+}
+function hexToRgba(hex, alpha){
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function setSyncBadge(text) {
-  document.getElementById('syncBadge').textContent = text;
+function promptNewFolder(){
+  const name = prompt('Nome do cliente:');
+  if(!name) return;
+  const clean = name.trim();
+  if(!clean) return;
+  if(!folders.includes(clean)) folders.push(clean);
+  saveData();
+  syncPushMeta();
+  renderAll();
+  showToast('Cliente adicionado: ' + clean);
+}
+function promptNewSection(){
+  const name = prompt('Nome da seção interna (ex: Jurídico, RH):');
+  if(!name) return;
+  const clean = name.trim();
+  if(!clean) return;
+  if(!sections.includes(clean)) sections.push(clean);
+  saveData();
+  syncPushMeta();
+  renderAll();
+  showToast('Seção adicionada: ' + clean);
 }
 
-// ========== RENDER ==========
-function render() {
-  renderSidebar();
-  renderStats();
-  renderTodayPanel();
-  renderTasks();
-}
-
-function renderSidebar() {
-  const tod = today();
-  document.getElementById('count-todas').textContent = tasks.filter(t => t.status !== 'concluida').length;
-  document.getElementById('count-hoje').textContent = tasks.filter(t => t.dueDate === tod && t.status !== 'concluida').length;
-  document.getElementById('count-vencidas').textContent = tasks.filter(t => t.dueDate && t.dueDate < tod && t.status !== 'concluida').length;
-
-  const container = document.getElementById('clientFolders');
-  container.innerHTML = '';
-  CLIENTS.forEach(f => {
-    const count = tasks.filter(t => t.folder === f && t.status !== 'concluida').length;
+function renderFolderNav(){
+  const nav = document.getElementById('folderNav');
+  nav.innerHTML = '';
+  folders.forEach(f=>{
+    const count = tasks.filter(t=>t.folder===f && t.status!=='concluida').length;
+    const color = getFolderColor(f);
     const btn = document.createElement('button');
-    btn.className = 'folder-btn' + (currentFolder === f ? ' active' : '');
-    btn.id = 'btn-' + f;
-    btn.innerHTML = `<span class="folder-icon">📁</span> ${f} <span class="count">${count}</span>`;
-    btn.onclick = () => selectFolder(f);
-    container.appendChild(btn);
+    btn.className = 'nav-item' + (currentView===f ? ' active' : '');
+    btn.innerHTML = `<span class="label"><span class="folder-dot" style="background:${color}"></span> ${escapeHtml(f)}</span><span class="count">${count}</span>`;
+    btn.onclick = () => setView(f);
+    nav.appendChild(btn);
   });
-
-  GP_FOLDERS.forEach(f => {
-    const el = document.getElementById('count-' + f);
-    if (el) el.textContent = tasks.filter(t => t.folder === f && t.status !== 'concluida').length;
-    const btn = document.getElementById('btn-' + f);
-    if (btn) btn.className = 'folder-btn' + (currentFolder === f ? ' active' : '');
-  });
-
-  ['todas','hoje','vencidas'].forEach(id => {
-    const el = document.getElementById('btn-' + id);
-    if (el) el.className = 'folder-btn' + (currentFolder === id ? ' active' : '');
+}
+function renderSectionNav(){
+  const nav = document.getElementById('sectionNav');
+  if(!nav) return;
+  nav.innerHTML = '';
+  sections.forEach(s=>{
+    const count = tasks.filter(t=>t.folder===s && t.status!=='concluida').length;
+    const btn = document.createElement('button');
+    btn.className = 'nav-item' + (currentView===s ? ' active' : '');
+    btn.innerHTML = `<span class="label"><span class="folder-dot" style="background:var(--gold)"></span> ${escapeHtml(s)}</span><span class="count">${count}</span>`;
+    btn.onclick = () => setView(s);
+    nav.appendChild(btn);
   });
 }
 
-function renderStats() {
-  const visible = getVisibleTasks();
-  const tod = today();
-  document.getElementById('statPendentes').textContent = visible.filter(t => t.status === 'pendente').length;
-  document.getElementById('statAndamento').textContent = visible.filter(t => t.status === 'em_andamento').length;
-  document.getElementById('statConcluidas').textContent = visible.filter(t => t.status === 'concluida').length;
-  document.getElementById('statVencidas').textContent = visible.filter(t => t.dueDate && t.dueDate < tod && t.status !== 'concluida').length;
-}
-
-function renderTodayPanel() {
-  const panel = document.getElementById('todayPanel');
-  if (currentFolder !== 'todas' && currentFolder !== 'hoje') { panel.style.display = 'none'; return; }
-  const tod = today();
-  const todayTasks = tasks.filter(t => t.dueDate === tod && t.status !== 'concluida');
-  const overdueTasks = tasks.filter(t => t.dueDate && t.dueDate < tod && t.status !== 'concluida');
-  const total = todayTasks.length + overdueTasks.length;
-  if (total === 0) { panel.style.display = 'none'; return; }
-  panel.style.display = 'block';
-  document.getElementById('todayCount').textContent = total + (total === 1 ? ' tarefa' : ' tarefas');
-  document.getElementById('todaySubtitle').textContent =
-    (overdueTasks.length > 0 ? overdueTasks.length + ' vencida(s) + ' : '') +
-    todayTasks.length + ' para hoje';
-  const list = document.getElementById('todayTasksList');
-  list.innerHTML = '';
-  [...overdueTasks.slice(0,3), ...todayTasks.slice(0,4)].forEach(t => {
-    const div = document.createElement('div');
-    div.className = 'today-task-item' + (isOverdue(t.dueDate) ? ' overdue' : '');
-    div.innerHTML = `<span>${isOverdue(t.dueDate) ? '⚠️' : '📅'}</span> <span style="flex:1">${t.title}</span> <span style="opacity:0.7;font-size:10px">${t.folder}</span>`;
-    list.appendChild(div);
-  });
-}
-
-function getVisibleTasks() {
-  const tod = today();
-  let result = [...tasks];
-  if (currentFolder === 'hoje') result = result.filter(t => t.dueDate === tod);
-  else if (currentFolder === 'vencidas') result = result.filter(t => t.dueDate && t.dueDate < tod && t.status !== 'concluida');
-  else if (currentFolder !== 'todas') result = result.filter(t => t.folder === currentFolder);
-  if (currentFilter !== 'todas') result = result.filter(t => t.status === currentFilter);
-  if (currentSearch) {
-    const q = currentSearch.toLowerCase();
-    result = result.filter(t => t.title.toLowerCase().includes(q) || (t.notes||'').toLowerCase().includes(q));
+// ========== VIEWS / FILTROS ==========
+function setView(view){
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  renderFolderNav();
+  renderSectionNav();
+  const known = {todas:'cnt-todas', hoje:'cnt-hoje', embreve:'cnt-embreve', vencidas:'cnt-vencidas'};
+  if(known[view]){
+    document.querySelector(`[data-view="${view}"]`).classList.add('active');
   }
-  return result;
+  render();
+}
+function setStatusFilter(status){
+  currentStatusFilter = status;
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.querySelector(`[data-status="${status}"]`).classList.add('active');
+  render();
 }
 
-function renderTasks() {
-  const list = document.getElementById('tasksList');
-  const visible = getVisibleTasks();
-  visible.sort((a,b) => {
-    if (a.status === 'concluida' && b.status !== 'concluida') return 1;
-    if (b.status === 'concluida' && a.status !== 'concluida') return -1;
-    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
-    if (a.dueDate) return -1;
-    if (b.dueDate) return 1;
-    return 0;
-  });
+function getFilteredTasks(){
+  const tod = today();
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = tasks.slice();
 
-  if (visible.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>Nenhuma tarefa encontrada.<br>Clique em "+ Nova Tarefa" para começar.</p></div>`;
+  if(currentView === 'hoje'){
+    list = list.filter(t=> t.dueDate === tod && t.status !== 'concluida');
+  } else if(currentView === 'embreve'){
+    list = list.filter(t=> isSoon(t.dueDate, t.status));
+  } else if(currentView === 'vencidas'){
+    list = list.filter(t=> isOverdue(t.dueDate, t.status));
+  } else if(currentView !== 'todas'){
+    list = list.filter(t=> t.folder === currentView);
+  }
+
+  if(currentStatusFilter !== 'todas'){
+    list = list.filter(t=> t.status === currentStatusFilter);
+  }
+
+  if(q){
+    list = list.filter(t=> t.title.toLowerCase().includes(q) || (t.notes||'').toLowerCase().includes(q));
+  }
+
+  list.sort((a,b)=> (a.dueDate||'').localeCompare(b.dueDate||''));
+  return list;
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+const recLabels = {diaria:'Diária',semanal:'Semanal',quinzenal:'Quinzenal',mensal:'Mensal',mensal_dia_util:'Mensal (dia útil)'};
+
+function renderTaskList(){
+  const list = getFilteredTasks();
+  const container = document.getElementById('taskList');
+  container.innerHTML = '';
+
+  if(list.length === 0){
+    container.innerHTML = `<div class="empty-state">
+      <div class="serif">Nenhuma tarefa aqui</div>
+      <div>Cadastre sua primeira tarefa ou ajuste os filtros acima.</div>
+    </div>`;
     return;
   }
 
-  list.innerHTML = '';
-  visible.forEach(t => {
+  list.forEach(t=>{
+    const overdue = isOverdue(t.dueDate, t.status);
+    const isTod = isToday(t.dueDate);
+    const soon = isSoon(t.dueDate, t.status);
+    const color = t.folder ? getFolderColor(t.folder) : null;
     const card = document.createElement('div');
-    card.className = `task-card priority-${t.priority}${t.status === 'concluida' ? ' status-concluida' : ''}`;
-    card.onclick = (e) => { if (!e.target.classList.contains('task-check')) openModal(t.id); };
+    card.className = 'task-card' + (overdue?' overdue':'') + (isTod && !overdue?' today':'') + (soon && !overdue && !isTod?' soon':'') + (t.status==='concluida'?' done':'');
 
-    const checkIcon = t.status === 'concluida' ? '✓' : t.status === 'em_andamento' ? '→' : '';
-    const checkClass = t.status === 'concluida' ? 'done' : t.status === 'em_andamento' ? 'in-progress' : '';
-
-    let dateHtml = '';
-    if (t.dueDate) {
-      const cls = isOverdue(t.dueDate) && t.status !== 'concluida' ? 'overdue' : isToday(t.dueDate) ? 'today' : '';
-      const label = isOverdue(t.dueDate) && t.status !== 'concluida' ? '⚠ Vencida ' : isToday(t.dueDate) ? '📅 Hoje ' : '';
-      dateHtml = `<span class="task-date ${cls}">${label}${formatDate(t.dueDate)}</span>`;
-    }
-
-    const recHtml = t.recurrence ? `<span class="task-recurrence">↻ ${recurrenceLabel(t.recurrence)}</span>` : '';
-    const priorityMap = {alta:'Alta',media:'Média',baixa:'Baixa'};
-    const priorityHtml = `<span class="badge-priority badge-${t.priority}">${priorityMap[t.priority]}</span>`;
+    const priorityBadge = t.priority ? `<span class="badge badge-${t.priority}">${t.priority==='alta'?'Alta':t.priority==='media'?'Média':'Baixa'}</span>` : '';
+    const recBadge = t.recurrence ? `<span class="badge badge-rec">↻ ${recLabels[t.recurrence]}</span>` : '';
+    let dateLabel;
+    if(overdue) dateLabel = `⚠️ ${formatDate(t.dueDate)}`;
+    else if(isTod) dateLabel = `📅 Hoje ${formatDate(t.dueDate)}`;
+    else if(soon) dateLabel = `⏳ ${formatDate(t.dueDate)} (em ${daysUntil(t.dueDate)}d)`;
+    else dateLabel = `📅 ${formatDate(t.dueDate)}`;
+    const folderBadge = t.folder ? `<span class="badge badge-folder" style="background:${hexToRgba(color,0.15)};color:${color}"><span class="folder-dot" style="background:${color}"></span>${escapeHtml(t.folder)}</span>` : '';
 
     card.innerHTML = `
-      <div class="task-check ${checkClass}" onclick="cycleStatus('${t.id}')">${checkIcon}</div>
+      <button class="task-check ${t.status==='concluida'?'checked':''}" title="Marcar como concluída"></button>
       <div class="task-body">
-        <div class="task-title${t.status==='concluida'?' done':''}">${t.title}</div>
+        <div class="task-title">${escapeHtml(t.title)}</div>
         <div class="task-meta">
-          <span class="task-folder">${t.folder}</span>
-          ${dateHtml}
-          ${recHtml}
-          ${priorityHtml}
+          ${folderBadge}
+          <span class="badge badge-date">${dateLabel}</span>
+          ${recBadge}
+          ${priorityBadge}
+          ${t.status==='andamento'?'<span class="badge badge-rec">Em andamento</span>':''}
         </div>
-        ${t.notes ? `<div style="font-size:11px;color:var(--text-light);margin-top:4px">${t.notes}</div>` : ''}
-        ${t.attachments && t.attachments.length > 0 ? `<div style="font-size:11px;color:var(--marsala);margin-top:4px">📎 ${t.attachments.length} anexo(s)</div>` : ''}
+        ${t.notes?`<div class="task-notes">${escapeHtml(t.notes)}</div>`:''}
+      </div>
+      <div class="task-actions">
+        <button class="icon-btn" title="Editar">✎</button>
       </div>
     `;
-    list.appendChild(card);
+    card.querySelector('.task-check').onclick = () => toggleComplete(t.id);
+    card.querySelector('.task-title').onclick = () => openTaskModal(t.id);
+    card.querySelector('.icon-btn').onclick = () => openTaskModal(t.id);
+    container.appendChild(card);
   });
-
-  const folderLabels = {
-    todas:'Todas as Tarefas',
-    hoje:'Agenda de Hoje',
-    vencidas:'Tarefas Vencidas',
-    'Gestão Plena — Documentos': 'Documentos',
-    'Gestão Plena — Administrativo': 'Administrativo',
-    'Gestão Plena — Financeiro': 'Financeiro',
-    'Gestão Plena — Comercial': 'Comercial',
-    'Gestão Plena — Fornecedores': 'Fornecedores',
-  };
-  document.getElementById('pageTitle').textContent = folderLabels[currentFolder] || currentFolder;
-  const count = visible.filter(t => t.status !== 'concluida').length;
-  document.getElementById('pageSubtitle').textContent = `${count} tarefa(s) pendente(s)`;
 }
 
-// ========== ACTIONS ==========
-function selectFolder(folder) {
-  if (currentSection !== 'tarefas') showTarefas();
-  currentFolder = folder;
-  render();
+function toggleComplete(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  if(t.status === 'concluida'){
+    t.status = 'pendente';
+  } else if(t.recurrence){
+    // Tarefa recorrente: registra conclusão e avança para a próxima ocorrência
+    t.dueDate = nextOccurrence(t);
+    t.status = 'pendente';
+    showToast('Concluída — próxima ocorrência: ' + formatDate(t.dueDate));
+  } else {
+    t.status = 'concluida';
+  }
+  saveData();
+  syncPushTask(t);
+  renderAll();
 }
 
-function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
-  document.getElementById('f-' + f).classList.add('active');
+function renderStats(){
+  const pend = tasks.filter(t=>t.status==='pendente').length;
+  const and = tasks.filter(t=>t.status==='andamento').length;
+  const conc = tasks.filter(t=>t.status==='concluida').length;
+  const venc = tasks.filter(t=>isOverdue(t.dueDate,t.status)).length;
+  const soon = tasks.filter(t=>isSoon(t.dueDate,t.status)).length;
+  document.getElementById('statPendentes').textContent = pend;
+  document.getElementById('statAndamento').textContent = and;
+  document.getElementById('statConcluidas').textContent = conc;
+  document.getElementById('statVencidas').textContent = venc;
+  document.getElementById('statEmBreve').textContent = soon;
+
+  document.getElementById('cnt-todas').textContent = tasks.filter(t=>t.status!=='concluida').length;
+  document.getElementById('cnt-hoje').textContent = tasks.filter(t=>t.dueDate===today() && t.status!=='concluida').length;
+  document.getElementById('cnt-embreve').textContent = soon;
+  document.getElementById('cnt-vencidas').textContent = venc;
+
+  const printDateEl = document.getElementById('printDate');
+  if(printDateEl) printDateEl.textContent = formatDate(today());
+}
+
+function renderViewTitle(){
+  const titles = {todas:'Todas as Tarefas', hoje:'Agenda de Hoje', embreve:'Vence em Breve (1-2 dias)', vencidas:'Tarefas Vencidas'};
+  document.getElementById('viewTitle').textContent = titles[currentView] || currentView;
+}
+
+function render(){
+  renderTaskList();
   renderStats();
-  renderTasks();
+  renderViewTitle();
 }
-
-function setSearch(v) {
-  currentSearch = v;
-  renderTasks();
-}
-
-function nextRecurrenceDate(t) {
-  if (!t.recurrence || !t.dueDate) return null;
-  const d = new Date(t.dueDate + 'T12:00:00');
-
-  if (t.recurrence === 'diaria') {
-    d.setDate(d.getDate() + 1);
-    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
-    return toLocalISO(d);
-  }
-  if (t.recurrence === 'semanal') {
-    d.setDate(d.getDate() + 7);
-    return toLocalISO(d);
-  }
-  if (t.recurrence === 'quinzenal') {
-    d.setDate(d.getDate() + 14);
-    return toLocalISO(d);
-  }
-  if (t.recurrence === 'mensal') {
-    const day = d.getDate();
-    d.setMonth(d.getMonth() + 1);
-    d.setDate(day);
-    return toLocalISO(d);
-  }
-  if (t.recurrence === 'mensal_dia_util') {
-    const nth = 5;
-    d.setMonth(d.getMonth() + 1);
-    d.setDate(1);
-    let count = 0;
-    while (count < nth) {
-      if (d.getDay() !== 0 && d.getDay() !== 6) count++;
-      if (count < nth) d.setDate(d.getDate() + 1);
-    }
-    return toLocalISO(d);
-  }
-  return null;
-}
-
-function cycleStatus(id) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-  const cycle = {pendente:'em_andamento', em_andamento:'concluida', concluida:'pendente'};
-  const newStatus = cycle[t.status];
-
-  if (newStatus === 'concluida' && t.recurrence) {
-    const nextDate = nextRecurrenceDate(t);
-    if (nextDate) {
-      const alreadyExists = tasks.some(x =>
-        x.id !== t.id &&
-        x.title === t.title &&
-        x.folder === t.folder &&
-        x.dueDate === nextDate &&
-        x.status !== 'concluida'
-      );
-      if (!alreadyExists) {
-        const newTask = {
-          ...t,
-          id: uid(),
-          status: 'pendente',
-          dueDate: nextDate,
-          comments: [],
-          attachments: [],
-        };
-        tasks.push(newTask);
-        showToast('✅ Concluída! Próxima criada para ' + formatDate(nextDate));
-      }
-    }
-  }
-
-  t.status = newStatus;
-  saveToDrive();
+function renderAll(){
+  renderFolderNav();
+  renderSectionNav();
+  renderNotes();
   render();
 }
 
 // ========== MODAL ==========
-function openModal(id) {
-  editingId = id || null;
-  const modal = document.getElementById('modalOverlay');
-  const t = id ? tasks.find(x => x.id === id) : null;
-
-  document.getElementById('modalTitle').textContent = t ? 'Editar Tarefa' : 'Nova Tarefa';
-  document.getElementById('fTitle').value = t ? t.title : '';
-  document.getElementById('fPriority').value = t ? t.priority : 'media';
-  document.getElementById('fDate').value = t ? (t.dueDate || '') : '';
-  document.getElementById('fRecurrence').value = t ? (t.recurrence || '') : '';
-  document.getElementById('fNotes').value = t ? (t.notes || '') : '';
-  document.getElementById('fRecurrenceDay').value = t ? (t.recurrenceDay || '1') : '1';
-  document.getElementById('btnDelete').style.display = t ? 'block' : 'none';
-
+function refreshFolderSelect(){
   const sel = document.getElementById('fFolder');
-  sel.innerHTML = '';
-
-  const grpClientes = document.createElement('optgroup');
-  grpClientes.label = 'Clientes';
-  CLIENTS.forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f;
-    opt.textContent = f;
-    if ((t && t.folder === f) || (!t && currentFolder === f)) opt.selected = true;
-    grpClientes.appendChild(opt);
-  });
-  sel.appendChild(grpClientes);
-
-  const grpGP = document.createElement('optgroup');
-  grpGP.label = 'Gestão Plena';
-  GP_FOLDERS.forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f;
-    opt.textContent = f.replace('Gestão Plena — ', '');
-    if ((t && t.folder === f) || (!t && currentFolder === f)) opt.selected = true;
-    grpGP.appendChild(opt);
-  });
-  sel.appendChild(grpGP);
-
-  const statusVal = t ? t.status : 'pendente';
-  selectStatus(statusVal, true);
-
-  const commentsSection = document.getElementById('commentsSection');
-  commentsSection.style.display = editingId ? 'block' : 'none';
-  if (editingId) renderComments(t.comments || []);
-
-  const attachmentsSection = document.getElementById('attachmentsSection');
-  attachmentsSection.style.display = editingId ? 'block' : 'none';
-  if (editingId) renderAttachments(t.attachments || []);
-
-  toggleRecurrenceDay();
-  modal.classList.add('open');
-  document.getElementById('fTitle').focus();
+  sel.innerHTML = buildFolderOptions();
+}
+function buildFolderOptions(){
+  if(folders.length === 0 && sections.length === 0) return '<option value="">Nenhum cliente cadastrado</option>';
+  let html = '';
+  if(folders.length){
+    html += `<optgroup label="Clientes">${folders.map(f=>`<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join('')}</optgroup>`;
+  }
+  if(sections.length){
+    html += `<optgroup label="Gestão Plena">${sections.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}</optgroup>`;
+  }
+  return html;
+}
+function onRecurrenceChange(){
+  const val = document.getElementById('fRecurrence').value;
+  document.getElementById('recDayGroup').style.display = val==='semanal' ? 'block':'none';
+  document.getElementById('recNthGroup').style.display = val==='mensal_dia_util' ? 'block':'none';
 }
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
+function openTaskModal(id){
+  refreshFolderSelect();
+  editingId = id || null;
+  const t = id ? tasks.find(x=>x.id===id) : null;
+  document.getElementById('modalTitle').textContent = t ? 'Editar Tarefa' : 'Nova Tarefa';
+  document.getElementById('deleteBtn').style.display = t ? 'inline-block' : 'none';
+  document.getElementById('fId').value = t ? t.id : '';
+  document.getElementById('fTitle').value = t ? t.title : '';
+  document.getElementById('fFolder').value = t ? t.folder : (folders[0]||'');
+  document.getElementById('fPriority').value = t ? t.priority : 'media';
+  document.getElementById('fStatus').value = t ? t.status : 'pendente';
+  document.getElementById('fDueDate').value = t ? t.dueDate : today();
+  document.getElementById('fRecurrence').value = t ? (t.recurrence||'') : '';
+  document.getElementById('fRecurrenceDay').value = t && t.recurrenceDay!==undefined ? t.recurrenceDay : '1';
+  document.getElementById('fRecurrenceNth').value = t && t.recurrenceNth ? t.recurrenceNth : 5;
+  document.getElementById('fNotes').value = t ? (t.notes||'') : '';
+  onRecurrenceChange();
+  document.getElementById('taskOverlay').classList.add('open');
+}
+function closeTaskModal(){
+  document.getElementById('taskOverlay').classList.remove('open');
   editingId = null;
 }
-
-function toggleRecurrenceDay() {
-  const r = document.getElementById('fRecurrence').value;
-  document.getElementById('recurrenceDayGroup').style.display = r === 'semanal' ? 'block' : 'none';
-}
-document.getElementById('fRecurrence').addEventListener('change', toggleRecurrenceDay);
-
-function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/(1024*1024)).toFixed(1) + ' MB';
-}
-
-function getFileIcon(name) {
-  const ext = name.split('.').pop().toLowerCase();
-  const icons = {pdf:'📄', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊', zip:'🗜️', rar:'🗜️'};
-  return icons[ext] || '📎';
-}
-
-function handleFileAttach(input) {
-  if (!editingId) return;
-  const t = tasks.find(x => x.id === editingId);
-  if (!t) return;
-  if (!t.attachments) t.attachments = [];
-
-  const files = Array.from(input.files);
-  let processed = 0;
-
-  files.forEach(file => {
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Arquivo muito grande (máx. 5MB): ' + file.name);
-      processed++;
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      t.attachments.push({
-        id: uid(),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        data: e.target.result
-      });
-      processed++;
-      if (processed === files.length) {
-        renderAttachments(t.attachments);
-        saveToDrive();
-        showToast('Arquivo anexado!');
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value = '';
-}
-
-function renderAttachments(attachments) {
-  const list = document.getElementById('attachmentList');
-  list.innerHTML = '';
-  if (!attachments || attachments.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--text-light);font-style:italic;margin-bottom:8px">Nenhum anexo ainda.</div>';
-    return;
-  }
-  attachments.forEach((att, idx) => {
-    const div = document.createElement('div');
-    div.className = 'attachment-item';
-    div.innerHTML = `
-      <span class="att-icon">${getFileIcon(att.name)}</span>
-      <span class="att-name" title="${att.name}">${att.name}</span>
-      <span class="att-size">${formatFileSize(att.size)}</span>
-      <button class="att-download" title="Baixar" onclick="downloadAttachment('${att.id}')">⬇️</button>
-      <button class="att-delete" title="Remover" onclick="removeAttachment('${att.id}')">✕</button>
-    `;
-    list.appendChild(div);
-  });
-}
-
-function downloadAttachment(attId) {
-  if (!editingId) return;
-  const t = tasks.find(x => x.id === editingId);
-  if (!t || !t.attachments) return;
-  const att = t.attachments.find(a => a.id === attId);
-  if (!att) return;
-  const a = document.createElement('a');
-  a.href = att.data;
-  a.download = att.name;
-  a.click();
-}
-
-function removeAttachment(attId) {
-  if (!editingId) return;
-  const t = tasks.find(x => x.id === editingId);
-  if (!t || !t.attachments) return;
-  t.attachments = t.attachments.filter(a => a.id !== attId);
-  renderAttachments(t.attachments);
-  saveToDrive();
-  showToast('Anexo removido');
-}
-
-function selectStatus(status, silent) {
-  ['pendente','em_andamento','concluida'].forEach(s => {
-    const el = document.getElementById('sopt-' + s);
-    if (el) el.className = 'status-opt' + (s === status ? ' active-' + s : '');
-  });
-  window._selectedStatus = status;
-}
-
-function renderComments(comments) {
-  const list = document.getElementById('commentList');
-  list.innerHTML = '';
-  if (!comments || comments.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--text-light);font-style:italic">Nenhum comentário ainda.</div>';
-    return;
-  }
-  comments.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'comment-item';
-    div.innerHTML = `<div class="comment-date">${c.date}</div><div class="comment-text">${c.text}</div>`;
-    list.appendChild(div);
-  });
-}
-
-function addComment() {
-  const input = document.getElementById('commentInput');
-  const text = input.value.trim();
-  if (!text || !editingId) return;
-  const t = tasks.find(x => x.id === editingId);
-  if (!t) return;
-  if (!t.comments) t.comments = [];
-  const now = new Date();
-  const date = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-  t.comments.push({ date, text });
-  input.value = '';
-  renderComments(t.comments);
-  saveToDrive();
-  showToast('Comentário adicionado!');
-}
-
-function saveTask() {
-  const title = document.getElementById('fTitle').value.trim();
-  if (!title) { showToast('Informe o título da tarefa'); return; }
-  const existing = editingId ? tasks.find(x=>x.id===editingId) : null;
-  const t = {
-    id: editingId || uid(),
-    title,
-    folder: document.getElementById('fFolder').value,
+document.getElementById('taskOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'taskOverlay') closeTaskModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key !== 'Escape') return;
+  if(document.getElementById('taskOverlay').classList.contains('open')) closeTaskModal();
+  if(document.getElementById('bulkOverlay').classList.contains('open')) closeBulkModal();
+  if(document.getElementById('syncOverlay').classList.contains('open')) closeSyncModal();
+});
+function saveTask(evt){
+  evt.preventDefault();
+  const folder = document.getElementById('fFolder').value;
+  if(!folder){ alert('Cadastre um cliente antes de criar a tarefa.'); return; }
+  const recurrence = document.getElementById('fRecurrence').value;
+  const data = {
+    folder,
+    title: document.getElementById('fTitle').value.trim(),
     priority: document.getElementById('fPriority').value,
-    status: window._selectedStatus || (existing ? existing.status : 'pendente'),
-    dueDate: document.getElementById('fDate').value || '',
-    recurrence: document.getElementById('fRecurrence').value || '',
-    recurrenceDay: document.getElementById('fRecurrenceDay').value,
-    notes: document.getElementById('fNotes').value.trim(),
-    comments: existing ? (existing.comments || []) : [],
-    attachments: existing ? (existing.attachments || []) : [],
+    status: document.getElementById('fStatus').value,
+    dueDate: document.getElementById('fDueDate').value,
+    recurrence: recurrence || null,
+    recurrenceDay: recurrence === 'semanal' ? document.getElementById('fRecurrenceDay').value : undefined,
+    recurrenceNth: recurrence === 'mensal_dia_util' ? document.getElementById('fRecurrenceNth').value : undefined,
+    notes: document.getElementById('fNotes').value.trim()
   };
-  if (editingId) {
-    const idx = tasks.findIndex(x => x.id === editingId);
-    tasks[idx] = t;
-  } else {
-    tasks.unshift(t);
+  if(data.recurrence === 'semanal' && data.recurrenceDay !== undefined && data.recurrenceDay !== ''){
+    data.dueDate = alignToWeekday(data.dueDate, parseInt(data.recurrenceDay,10));
   }
-  saveToDrive();
-  render();
-  closeModal();
-  showToast(editingId ? 'Tarefa atualizada!' : 'Tarefa criada!');
+  let savedTask;
+  if(editingId){
+    const idx = tasks.findIndex(x=>x.id===editingId);
+    tasks[idx] = {...tasks[idx], ...data};
+    savedTask = tasks[idx];
+  } else {
+    savedTask = {id: uid(), createdAt: new Date().toISOString(), ...data};
+    tasks.push(savedTask);
+  }
+  saveData();
+  syncPushTask(savedTask);
+  closeTaskModal();
+  renderAll();
+  showToast('Tarefa salva');
 }
-
-function deleteTask() {
-  if (!editingId) return;
-  if (!confirm('Excluir esta tarefa?')) return;
-  tasks = tasks.filter(x => x.id !== editingId);
-  saveToDrive();
-  render();
-  closeModal();
+function deleteCurrentTask(){
+  if(!editingId) return;
+  if(!confirm('Excluir esta tarefa definitivamente?')) return;
+  const idToDelete = editingId;
+  tasks = tasks.filter(x=>x.id!==idToDelete);
+  saveData();
+  syncDeleteTask(idToDelete);
+  closeTaskModal();
+  renderAll();
   showToast('Tarefa excluída');
 }
 
-// ========== TOAST ==========
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 2500);
+// ========== IMPRESSÃO ==========
+function printChecklist(){
+  setView('hoje');
+  setTimeout(()=>window.print(), 150);
 }
-
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
 
 // ========== NOTAS RÁPIDAS ==========
-let notas = JSON.parse(localStorage.getItem('gp_notas') || '[]');
-const NOTA_COLORS = ['color-1','color-2','color-3','color-4','color-5'];
-const COLOR_HEX = ['#FFF8DC','#FEF4F4','#F0F4FF','#F0FFF4','#FFF0F5'];
-
-function saveNotas() {
-  localStorage.setItem('gp_notas', JSON.stringify(notas));
-}
-
-function renderNotas() {
-  const grid = document.getElementById('notasGrid');
-  if (!grid) return;
+function renderNotes(){
+  const grid = document.getElementById('notesGrid');
   grid.innerHTML = '';
-
-  if (notas.length === 0) {
-    grid.innerHTML = '<div style="text-align:center;padding:30px 10px;color:var(--text-light);font-size:12px">Nenhuma nota ainda.<br>Clique em "+ Nova" para começar.</div>';
+  if(notes.length === 0){
+    grid.innerHTML = '<div class="notes-empty">Nenhuma nota por aqui ainda.</div>';
     return;
   }
-
-  [...notas].reverse().forEach(n => {
+  notes.slice().sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||'')).forEach(n=>{
     const card = document.createElement('div');
-    card.className = 'nota-card ' + (n.color || 'color-1');
-    card.setAttribute('data-nota-id', n.id);
-    card.innerHTML = `
-      <div class="color-picker" id="cp-${n.id}">
-        ${COLOR_HEX.map((c,i) => `<div class="color-dot${n.color === 'color-'+(i+1) ? ' selected' : ''}" style="background:${c}" onclick="changeNotaColor('${n.id}','color-${i+1}',this)"></div>`).join('')}
-      </div>
-      <div class="nota-date">${n.date}</div>
-      <textarea class="nota-text" id="nt-${n.id}" onblur="saveNotaText('${n.id}',this.value)">${n.text}</textarea>
-      <div class="nota-actions">
-        <button class="nota-btn" title="Excluir" onclick="deleteNota('${n.id}')">🗑️</button>
-      </div>
-    `;
+    card.className = 'note-card';
+    card.innerHTML = `<button class="note-del" title="Excluir nota">✕</button><div>${escapeHtml(n.text)}</div>`;
+    card.querySelector('.note-del').onclick = () => deleteNote(n.id);
     grid.appendChild(card);
   });
 }
-
-function addNota() {
-  const now = new Date();
-  const date = now.toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
-  const n = { id: uid(), text: '', date, color: 'color-1' };
-  notas.push(n);
-  saveNotas();
-  renderNotas();
-  setTimeout(() => {
-    const el = document.getElementById('nt-' + n.id);
-    if (el) el.focus();
-  }, 50);
+function addNote(){
+  const text = prompt('Nova nota:');
+  if(!text || !text.trim()) return;
+  notes.push({id: uid(), text: text.trim(), createdAt: new Date().toISOString()});
+  saveData();
+  syncPushMeta();
+  renderNotes();
+}
+function deleteNote(id){
+  notes = notes.filter(n=>n.id!==id);
+  saveData();
+  syncPushMeta();
+  renderNotes();
 }
 
-function saveNotaText(id, text) {
-  const n = notas.find(x => x.id === id);
-  if (n) { n.text = text; saveNotas(); }
+// ========== ROTINA EM LOTE ==========
+function refreshBulkFolderSelect(){
+  const sel = document.getElementById('bFolder');
+  sel.innerHTML = buildFolderOptions();
 }
-
-function changeNotaColor(id, color, dotEl) {
-  const n = notas.find(x => x.id === id);
-  if (!n) return;
-  n.color = color;
-  saveNotas();
-  renderNotas();
+function onBulkRecurrenceChange(){
+  const val = document.getElementById('bRecurrence').value;
+  document.getElementById('bRecDayGroup').style.display = val==='semanal' ? 'block':'none';
+  document.getElementById('bRecNthGroup').style.display = val==='mensal_dia_util' ? 'block':'none';
 }
-
-function deleteNota(id) {
-  const card = document.querySelector(`[data-nota-id="${id}"]`);
-  if (card) {
-    card.classList.add('closing');
-    setTimeout(() => {
-      notas = notas.filter(x => x.id !== id);
-      saveNotas();
-      renderNotas();
-    }, 300);
-  } else {
-    notas = notas.filter(x => x.id !== id);
-    saveNotas();
-    renderNotas();
-  }
-}
-
-// ========== DADOS IMPORTANTES ==========
-let dados = JSON.parse(localStorage.getItem('gp_dados') || '[]');
-
-function saveDados() {
-  localStorage.setItem('gp_dados', JSON.stringify(dados));
-}
-
-function getFileIcon2(name) {
-  const ext = (name || '').split('.').pop().toLowerCase();
-  const icons = {pdf:'📄',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',zip:'🗜️',csv:'📊'};
-  return icons[ext] || '📎';
-}
-
-function renderDados() {
-  const container = document.getElementById('dadosContent');
-  container.innerHTML = '';
-
-  const groups = {};
-  FOLDERS.forEach(f => { groups[f] = []; });
-  groups['Geral'] = [];
-  dados.forEach(d => {
-    const g = groups[d.folder] !== undefined ? d.folder : 'Geral';
-    groups[g].push(d);
-  });
-
-  const uploadSection = document.createElement('div');
-  uploadSection.innerHTML = `
-    <div style="margin-bottom:24px">
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
-        <select class="form-select" id="dadoFolderSel" style="max-width:220px">
-          <option value="Geral">Geral</option>
-          ${FOLDERS.map(f => `<option value="${f}">${f}</option>`).join('')}
-        </select>
-        <label class="dado-upload-area" style="max-width:300px;padding:14px 20px;display:inline-flex;align-items:center;gap:10px;border-radius:8px">
-          <span style="font-size:20px">📎</span>
-          <span style="font-size:13px;color:var(--text-mid)">Anexar arquivo ao cliente selecionado</span>
-          <input type="file" multiple style="display:none" onchange="handleDadoUpload(this)">
-        </label>
-      </div>
-    </div>
+function addBulkRow(){
+  const div = document.createElement('div');
+  div.className = 'bulk-row';
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+  div.innerHTML = `
+    <input type="text" placeholder="Título da tarefa" class="bulk-title" style="flex:2;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--cream);font-size:14px;">
+    <input type="date" class="bulk-date" value="${today()}" style="flex:1;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--cream);font-size:14px;">
+    <button type="button" class="icon-btn" title="Remover item">✕</button>
   `;
-  container.appendChild(uploadSection);
-
-  FOLDERS.concat(['Geral']).forEach(folder => {
-    const items = groups[folder] || [];
-    if (items.length === 0) return;
-    const section = document.createElement('div');
-    section.className = 'dados-section';
-    section.innerHTML = `<div class="dados-section-title"><span>📁</span> ${folder}</div>`;
-    const grid = document.createElement('div');
-    grid.className = 'dados-grid';
-    items.forEach(d => {
-      const card = document.createElement('div');
-      card.className = 'dado-card';
-      card.innerHTML = `
-        <span class="dado-icon">${getFileIcon2(d.name)}</span>
-        <div class="dado-info">
-          <div class="dado-name">${d.name}</div>
-          <div class="dado-meta">${formatFileSize(d.size)} · ${d.date}</div>
-        </div>
-        <div class="dado-actions">
-          <button class="dado-btn" title="Baixar" onclick="downloadDado('${d.id}')">⬇️</button>
-          <button class="dado-btn del" title="Remover" onclick="deleteDado('${d.id}')">✕</button>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-    section.appendChild(grid);
-    container.appendChild(section);
-  });
-
-  if (dados.length === 0) {
-    container.innerHTML += '<div class="empty-state"><div class="icon">🔒</div><p>Nenhum arquivo adicionado ainda.<br>Selecione um cliente e anexe um arquivo acima.</p></div>';
-  }
+  div.querySelector('.icon-btn').onclick = () => div.remove();
+  document.getElementById('bulkRows').appendChild(div);
 }
-
-function handleDadoUpload(input) {
-  const folder = document.getElementById('dadoFolderSel').value;
-  const files = Array.from(input.files);
-  files.forEach(file => {
-    if (file.size > 10 * 1024 * 1024) { showToast('Arquivo muito grande (máx. 10MB): ' + file.name); return; }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const now = new Date();
-      dados.push({
-        id: uid(),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        folder,
-        date: now.toLocaleDateString('pt-BR'),
-        data: e.target.result
-      });
-      saveDados();
-      renderDados();
-      showToast('Arquivo adicionado!');
+function openBulkModal(){
+  refreshBulkFolderSelect();
+  document.getElementById('bulkRows').innerHTML = '';
+  addBulkRow(); addBulkRow(); addBulkRow();
+  document.getElementById('bRecurrence').value = '';
+  onBulkRecurrenceChange();
+  document.getElementById('bulkOverlay').classList.add('open');
+}
+function closeBulkModal(){
+  document.getElementById('bulkOverlay').classList.remove('open');
+}
+function saveBulk(evt){
+  evt.preventDefault();
+  const folder = document.getElementById('bFolder').value;
+  if(!folder){ alert('Cadastre um cliente antes de criar a rotina.'); return; }
+  const recurrence = document.getElementById('bRecurrence').value || null;
+  const recurrenceDay = recurrence==='semanal' ? document.getElementById('bRecurrenceDay').value : undefined;
+  const recurrenceNth = recurrence==='mensal_dia_util' ? document.getElementById('bRecurrenceNth').value : undefined;
+  const priority = document.getElementById('bPriority').value;
+  const rows = [...document.querySelectorAll('#bulkRows .bulk-row')];
+  let count = 0;
+  const createdTasks = [];
+  rows.forEach(row=>{
+    const title = row.querySelector('.bulk-title').value.trim();
+    let dueDate = row.querySelector('.bulk-date').value;
+    if(!title || !dueDate) return;
+    if(recurrence==='semanal' && recurrenceDay!==undefined && recurrenceDay!==''){
+      dueDate = alignToWeekday(dueDate, parseInt(recurrenceDay,10));
+    }
+    const newTask = {
+      id: uid(), createdAt: new Date().toISOString(),
+      folder, title, priority, status:'pendente', dueDate,
+      recurrence, recurrenceDay, recurrenceNth, notes:''
     };
-    reader.readAsDataURL(file);
+    tasks.push(newTask);
+    createdTasks.push(newTask);
+    count++;
   });
-  input.value = '';
+  if(count===0){ alert('Preencha ao menos um item com título e data.'); return; }
+  saveData();
+  createdTasks.forEach(syncPushTask);
+  closeBulkModal();
+  renderAll();
+  showToast(count + ' tarefa(s) criada(s) com sucesso');
 }
+document.getElementById('bulkOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'bulkOverlay') closeBulkModal();
+});
 
-function downloadDado(id) {
-  const d = dados.find(x => x.id === id);
-  if (!d) return;
-  const a = document.createElement('a');
-  a.href = d.data;
-  a.download = d.name;
-  a.click();
-}
-
-function deleteDado(id) {
-  if (!confirm('Remover este arquivo?')) return;
-  dados = dados.filter(x => x.id !== id);
-  saveDados();
-  renderDados();
-  showToast('Arquivo removido');
-}
-
-// ========== SECTION NAVIGATION ==========
-let currentSection = 'tarefas';
-
-function showSection(section) {
-  currentSection = section;
-
-  document.getElementById('todayPanel').style.display = 'none';
-  document.getElementById('statsBar').style.display = 'none';
-  document.querySelectorAll('.filters, .tasks-list, .page-header').forEach(el => el.style.display = 'none');
-  document.getElementById('panel-notas').classList.remove('active');
-  document.getElementById('panel-dados').classList.remove('active');
-
-  document.querySelectorAll('.folder-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('btn-' + section);
-  if (btn) btn.classList.add('active');
-
-  if (section === 'notas') {
-    document.getElementById('panel-notas').classList.add('active');
-    renderNotas();
-  } else if (section === 'dados') {
-    document.getElementById('panel-dados').classList.add('active');
-    renderDados();
+// ========== SINCRONIZAÇÃO ==========
+function genSyncCode(){
+  // Código curto, fácil de copiar/digitar: 3 blocos de 4 caracteres
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem caracteres ambíguos (0/O, 1/I)
+  let code = '';
+  for(let block=0; block<3; block++){
+    if(block>0) code += '-';
+    for(let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
   }
+  return code;
 }
 
-function toggleNotasPanel() {
-  const panel = document.getElementById('notasPanel');
-  const toggle = document.getElementById('notasToggle');
-  const main = document.querySelector('.main');
-  const hidden = panel.classList.toggle('hidden');
-  toggle.classList.toggle('hidden', hidden);
-  if (hidden) {
-    toggle.style.right = '0';
-    main.classList.add('no-notas');
-  } else {
-    toggle.style.right = '290px';
-    main.classList.remove('no-notas');
+function updateSyncStatusDot(state){
+  const dot = document.getElementById('syncStatusDot');
+  const text = document.getElementById('syncStatusText');
+  if(!dot) return;
+  dot.className = 'sync-dot' + (state==='error' ? ' error' : state==='off' ? ' off' : '');
+  text.textContent = state==='error' ? 'Erro de conexão — tentando novamente' : state==='off' ? 'Desconectado' : 'Conectado e sincronizando';
+}
+
+function openSyncModal(){
+  const connected = !!syncCode;
+  document.getElementById('syncConnectedView').style.display = connected ? 'block' : 'none';
+  document.getElementById('syncSetupView').style.display = connected ? 'none' : 'block';
+  if(connected){
+    document.getElementById('syncCodeDisplay').textContent = syncCode;
+    updateSyncStatusDot('on');
   }
+  document.getElementById('syncOverlay').classList.add('open');
 }
-
-function showTarefas() {
-  currentSection = 'tarefas';
-  document.getElementById('panel-notas').classList.remove('active');
-  document.getElementById('panel-dados').classList.remove('active');
-  document.getElementById('statsBar').style.display = 'flex';
-  document.querySelectorAll('.filters, .tasks-list, .page-header').forEach(el => el.style.display = '');
-  render();
+function closeSyncModal(){
+  document.getElementById('syncOverlay').classList.remove('open');
 }
-
-// ========== GOOGLE CALENDAR ==========
-const GCAL_CLIENT_ID = '961164660454-sp7e3jp7cpbk19lr3vg9ebr3s9uk2ane.apps.googleusercontent.com';
-const GCAL_SCOPES = 'https://www.googleapis.com/auth/calendar';
-const GCAL_DISCOVERY = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
-let tokenClient = null;
-let gapiInited = false;
-let gsiInited = false;
-let calendarSyncing = false;
-
-function gapiLoaded() {
-  gapi.load('client', async () => {
-    await gapi.client.init({ discoveryDocs: [GCAL_DISCOVERY] });
-    gapiInited = true;
+function copySyncCode(){
+  navigator.clipboard.writeText(syncCode).then(()=>showToast('Código copiado')).catch(()=>{
+    prompt('Copie o código manualmente:', syncCode);
   });
 }
 
-function gsiLoaded() {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: GCAL_CLIENT_ID,
-    scope: GCAL_SCOPES,
-    callback: async (resp) => {
-      if (resp.error) { showToast('Erro na autenticação: ' + resp.error); return; }
-      await syncToCalendar();
-    },
+function generateSyncCode(){
+  if(!db){ alert('Não foi possível conectar ao serviço de sincronização.'); return; }
+  const code = genSyncCode();
+  if(!confirm(`Isso vai enviar TODAS as tarefas, clientes e notas deste aparelho para a nuvem, sob o código:\n\n${code}\n\nDepois é só usar esse código no outro aparelho. Continuar?`)) return;
+  syncCode = code;
+  localStorage.setItem(SYNC_CODE_KEY, syncCode);
+  pushAllLocalDataToCloud().then(()=>{
+    attachSyncListeners();
+    openSyncModal();
+    showToast('Sincronização ativada');
+  }).catch(err=>{
+    alert('Erro ao enviar dados: ' + err.message);
   });
-  gsiInited = true;
 }
 
-async function handleCalendarSync() {
-  if (calendarSyncing) return;
-  const btn = document.getElementById('btnSync');
-  btn.classList.add('syncing');
-  btn.textContent = '⏳ Sincronizando...';
-
-  if (!gapiInited || !gsiInited) {
-    showToast('Aguarde, carregando APIs do Google...');
-    setTimeout(handleCalendarSync, 1500);
-    return;
-  }
-
-  if (gapi.client.getToken() === null) {
-    tokenClient.requestAccessToken({ prompt: 'consent' });
-  } else {
-    await syncToCalendar();
-  }
+function pushAllLocalDataToCloud(){
+  const batch = db.batch();
+  const tasksCol = db.collection('syncs').doc(syncCode).collection('tasks');
+  tasks.forEach(t=>{ batch.set(tasksCol.doc(t.id), t); });
+  const metaDoc = db.collection('syncs').doc(syncCode).collection('meta').doc('data');
+  batch.set(metaDoc, {folders, notes, sections});
+  return batch.commit();
 }
 
-async function syncToCalendar() {
-  calendarSyncing = true;
-  const btn = document.getElementById('btnSync');
-  let synced = 0;
-  let errors = 0;
+function connectWithSyncCode(){
+  if(!db){ alert('Não foi possível conectar ao serviço de sincronização.'); return; }
+  const input = document.getElementById('syncCodeInput').value.trim().toUpperCase();
+  if(!input){ alert('Cole um código válido.'); return; }
+  if(!confirm('Isso vai SUBSTITUIR os dados deste aparelho pelos dados da nuvem desse código. Os dados atuais deste aparelho serão perdidos (a menos que você tenha um backup exportado). Continuar?')) return;
+  syncCode = input;
+  localStorage.setItem(SYNC_CODE_KEY, syncCode);
+  attachSyncListeners();
+  closeSyncModal();
+  showToast('Conectando à sincronização...');
+}
 
-  try {
-    const existingResp = await gapi.client.calendar.events.list({
-      calendarId: 'primary',
-      q: '[GP]',
-      maxResults: 500,
-      singleEvents: true,
-    });
-    const existing = existingResp.result.items || [];
-    const existingIds = {};
-    existing.forEach(e => {
-      const match = e.description && e.description.match(/GP_TASK_ID:(\S+)/);
-      if (match) existingIds[match[1]] = e.id;
+function disconnectSync(){
+  if(!confirm('Desconectar este aparelho da sincronização? As tarefas continuam salvas localmente aqui, mas não vão mais atualizar sozinhas com os outros aparelhos.')) return;
+  if(syncTasksUnsub) syncTasksUnsub();
+  if(syncMetaUnsub) syncMetaUnsub();
+  syncTasksUnsub = null;
+  syncMetaUnsub = null;
+  syncCode = null;
+  localStorage.removeItem(SYNC_CODE_KEY);
+  closeSyncModal();
+  showToast('Sincronização desconectada');
+}
+
+function attachSyncListeners(){
+  if(!db || !syncCode) return;
+  if(syncTasksUnsub) syncTasksUnsub();
+  if(syncMetaUnsub) syncMetaUnsub();
+
+  syncTasksUnsub = db.collection('syncs').doc(syncCode).collection('tasks')
+    .onSnapshot(snap=>{
+      applyingRemoteUpdate = true;
+      tasks = snap.docs.map(d=>d.data());
+      advanceOverdueRecurring();
+      renderAll();
+      saveData();
+      applyingRemoteUpdate = false;
+      updateSyncStatusDot('on');
+    }, err=>{
+      console.error(err);
+      updateSyncStatusDot('error');
     });
 
-    const toSync = tasks.filter(t => t.dueDate && t.status !== 'concluida');
-
-    for (const t of toSync) {
-      const eventBody = {
-        summary: '[GP] ' + t.folder + ' — ' + t.title,
-        description: 'GP_TASK_ID:' + t.id + '\nCliente: ' + t.folder + '\nPrioridade: ' + t.priority + (t.notes ? '\n\n' + t.notes : ''),
-        start: { date: t.dueDate },
-        end: { date: t.dueDate },
-        colorId: t.priority === 'alta' ? '11' : t.priority === 'media' ? '5' : '2',
-        reminders: {
-          useDefault: false,
-          overrides: [
-            { method: 'popup', minutes: -540 },
-            { method: 'email', minutes: -540 },
-          ],
-        },
-      };
-
-      try {
-        if (existingIds[t.id]) {
-          await gapi.client.calendar.events.update({
-            calendarId: 'primary',
-            eventId: existingIds[t.id],
-            resource: eventBody,
-          });
-        } else {
-          await gapi.client.calendar.events.insert({
-            calendarId: 'primary',
-            resource: eventBody,
-          });
-        }
-        synced++;
-      } catch(e) { errors++; }
-    }
-
-    for (const t of tasks.filter(t => t.status === 'concluida' && existingIds[t.id])) {
-      try {
-        await gapi.client.calendar.events.delete({
-          calendarId: 'primary',
-          eventId: existingIds[t.id],
-        });
-      } catch(e) {}
-    }
-
-    btn.classList.remove('syncing');
-    btn.classList.add('synced');
-    btn.textContent = '✓ ' + synced + ' tarefas sincronizadas';
-    showToast(synced + ' tarefa(s) sincronizada(s) com o Google Agenda!');
-    setTimeout(() => {
-      btn.classList.remove('synced');
-      btn.textContent = '📅 Sincronizar Agenda';
-    }, 4000);
-
-  } catch(e) {
-    showToast('Erro ao sincronizar: ' + (e.message || e));
-    btn.classList.remove('syncing');
-    btn.textContent = '📅 Sincronizar Agenda';
-  }
-
-  calendarSyncing = false;
+  syncMetaUnsub = db.collection('syncs').doc(syncCode).collection('meta').doc('data')
+    .onSnapshot(doc=>{
+      if(doc.exists){
+        applyingRemoteUpdate = true;
+        const d = doc.data();
+        if(Array.isArray(d.folders)) folders = d.folders;
+        if(Array.isArray(d.notes)) notes = d.notes;
+        if(Array.isArray(d.sections)) sections = d.sections;
+        renderAll();
+        saveData();
+        applyingRemoteUpdate = false;
+      }
+      updateSyncStatusDot('on');
+    }, err=>{
+      console.error(err);
+      updateSyncStatusDot('error');
+    });
 }
 
-
-// ═══════════════════════════════
-//  GERENCIAR PASTAS DINÂMICAS
-// ═══════════════════════════════
-
-function loadCustomFolders() {
-  try {
-    const DEFAULT_CLIENTS_REF = ['FMR Soluções','Gracy Ambiental','Lord Chicken e Burguers','Mobile Collection','Panobianco','Nutra','AD Telecom','Ki-Delícia'];
-    const DEFAULT_GP_REF = ['Gestão Plena — Documentos','Gestão Plena — Administrativo','Gestão Plena — Financeiro','Gestão Plena — Comercial','Gestão Plena — Fornecedores'];
-    const cc = localStorage.getItem('gp_custom_clients');
-    const cg = localStorage.getItem('gp_custom_gp');
-    if (cc) JSON.parse(cc).forEach(c => { if (!CLIENTS.includes(c)) CLIENTS.push(c); });
-    if (cg) JSON.parse(cg).forEach(f => { if (!GP_FOLDERS.includes(f)) GP_FOLDERS.push(f); });
-  } catch(e) {}
+// Envia só a tarefa alterada (nunca a lista inteira) — evita sobrescrever dado de outro aparelho
+function syncPushTask(task){
+  if(!db || !syncCode || applyingRemoteUpdate) return;
+  db.collection('syncs').doc(syncCode).collection('tasks').doc(task.id).set(task)
+    .catch(err=>{ console.error(err); updateSyncStatusDot('error'); });
+}
+function syncDeleteTask(id){
+  if(!db || !syncCode || applyingRemoteUpdate) return;
+  db.collection('syncs').doc(syncCode).collection('tasks').doc(id).delete()
+    .catch(err=>{ console.error(err); updateSyncStatusDot('error'); });
+}
+function syncPushMeta(){
+  if(!db || !syncCode || applyingRemoteUpdate) return;
+  db.collection('syncs').doc(syncCode).collection('meta').doc('data').set({folders, notes, sections})
+    .catch(err=>{ console.error(err); updateSyncStatusDot('error'); });
 }
 
-function saveCustomFolders() {
-  const DEFAULT_CLIENTS_REF = ['FMR Soluções','Gracy Ambiental','Lord Chicken e Burguers','Mobile Collection','Panobianco','Nutra','AD Telecom','Ki-Delícia'];
-  const DEFAULT_GP_REF = ['Gestão Plena — Documentos','Gestão Plena — Administrativo','Gestão Plena — Financeiro','Gestão Plena — Comercial','Gestão Plena — Fornecedores'];
-  try {
-    localStorage.setItem('gp_custom_clients', JSON.stringify(CLIENTS.filter(c => !DEFAULT_CLIENTS_REF.includes(c))));
-    localStorage.setItem('gp_custom_gp', JSON.stringify(GP_FOLDERS.filter(f => !DEFAULT_GP_REF.includes(f))));
-  } catch(e) {}
-}
+document.getElementById('syncOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'syncOverlay') closeSyncModal();
+});
 
-function novaPasta(tipo) {
-  const label = tipo === 'cliente' ? 'Nome do novo cliente:' : 'Nome da nova pasta Gestão Plena:';
-  const nome = prompt(label);
-  if (!nome || !nome.trim()) return;
-  const nomeLimpo = nome.trim();
-  if (tipo === 'cliente') {
-    if (CLIENTS.includes(nomeLimpo)) { alert('Este cliente já existe!'); return; }
-    CLIENTS.push(nomeLimpo);
-  } else {
-    const chave = 'Gestão Plena — ' + nomeLimpo;
-    if (GP_FOLDERS.includes(chave)) { alert('Esta pasta já existe!'); return; }
-    GP_FOLDERS.push(chave);
-  }
-  saveCustomFolders();
-  renderSidebar();
-  renderGPExtra();
-}
-
-function renderGPExtra() {
-  const container = document.getElementById('gpExtraFolders');
-  if (!container) return;
-  const DEFAULT_GP_REF = ['Gestão Plena — Documentos','Gestão Plena — Administrativo','Gestão Plena — Financeiro','Gestão Plena — Comercial','Gestão Plena — Fornecedores'];
-  container.innerHTML = '';
-  GP_FOLDERS.filter(f => !DEFAULT_GP_REF.includes(f)).forEach(f => {
-    const label = f.replace('Gestão Plena — ', '');
-    const count = tasks.filter(t => t.folder === f && t.status !== 'concluida').length;
-    const btn = document.createElement('button');
-    btn.className = 'folder-btn' + (currentFolder === f ? ' active' : '');
-    btn.id = 'btn-' + f;
-    btn.innerHTML = `<span class="folder-icon">📂</span> ${label} <span class="count">${count}</span>`;
-    btn.onclick = () => selectFolder(f);
-    container.appendChild(btn);
-  });
+// ========== TOAST ==========
+let toastTimer = null;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2500);
 }
 
 // ========== INIT ==========
-function init() {
-  checkStorage();
-  const EMBEDDED_TASKS = [{"id": "mpfus3otcw7qh", "folder": "FMR Soluções", "title": "Solicitação de informações de ponto da semana anterior", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "1", "dueDate": "2026-05-25", "notes": "", "comments": [], "attachments": []}, {"id": "mpfus3oxb4jy5", "folder": "FMR Soluções", "title": "Conciliação da semana anterior para conferência", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "1", "dueDate": "2026-05-25", "notes": "", "comments": [], "attachments": []}, {"id": "mpfus3oxfzjhz", "folder": "FMR Soluções", "title": "Verificar se tem expediente no sábado", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "3", "dueDate": "2026-05-27", "notes": "Confirmar com equipe FMR", "comments": [], "attachments": []}, {"id": "mpfus3oxclhxu", "folder": "FMR Soluções", "title": "Pagamento Brisa", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-15", "notes": "Todo dia 15", "comments": [], "attachments": []}, {"id": "mpfus3oxi0u0d", "folder": "FMR Soluções", "title": "Pagamento Gestão Plena", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-15", "notes": "Todo dia 15", "comments": [], "attachments": []}, {"id": "mpfus3oxhga6w", "folder": "FMR Soluções", "title": "Pagamento Brisa", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20", "comments": [], "attachments": []}, {"id": "mpfus3oyy4do5", "folder": "FMR Soluções", "title": "Pagamento Aluguel", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20", "comments": [], "attachments": []}, {"id": "mpfus3oysafgz", "folder": "FMR Soluções", "title": "Pagamento Alares", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-22", "notes": "Todo dia 22", "comments": [], "attachments": []}, {"id": "mpfus3oylo25l", "folder": "FMR Soluções", "title": "Links da Motorola", "priority": "media", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-01", "notes": "Todo dia 01", "comments": [], "attachments": []}, {"id": "mpfus3oydk5ra", "folder": "FMR Soluções", "title": "Faturamento contratos mensais", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-28", "notes": "Todo dia 28", "comments": [], "attachments": []}, {"id": "mpfus3oyszrnq", "folder": "FMR Soluções", "title": "Reunião mensal de resultados", "priority": "alta", "status": "pendente", "recurrence": "mensal_dia_util", "dueDate": "2026-06-05", "notes": "Todo 5º dia útil do mês", "comments": [], "attachments": []}, {"id": "mpfus3oyd3jhu", "folder": "Lord Chicken e Burguers", "title": "Reunião mensal de resultados", "priority": "media", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-10", "notes": "Todo dia 10", "comments": [], "attachments": []}, {"id": "mpfus3oytqrc0", "folder": "Lord Chicken e Burguers", "title": "Solicitar extrato para apuração do Simples", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-05", "notes": "Todo dia 05", "comments": [], "attachments": []}, {"id": "mpfus3oy6ivxh", "folder": "Panobianco", "title": "Envio de informações para fechamento de folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-26", "notes": "Todo dia 26", "comments": [], "attachments": []}, {"id": "mpfus3oy26627", "folder": "Panobianco", "title": "Conferência de pontos", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "2", "dueDate": "2026-05-26", "notes": "Toda terça-feira", "comments": [], "attachments": []}, {"id": "mpfus3oyi6d96", "folder": "Panobianco", "title": "Pagamento de INSS e FGTS", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oy065e2", "folder": "Panobianco", "title": "Pagamento de Folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-30", "notes": "Todo dia 30 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oy41yru", "folder": "Nutra", "title": "Envio de informações para fechamento de folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-26", "notes": "Todo dia 26", "comments": [], "attachments": []}, {"id": "mpfus3oykoy37", "folder": "Nutra", "title": "Conferência de pontos", "priority": "media", "status": "pendente", "recurrence": "semanal", "recurrenceDay": "2", "dueDate": "2026-05-26", "notes": "Toda terça-feira", "comments": [], "attachments": []}, {"id": "mpfus3oypaxq3", "folder": "Nutra", "title": "Pagamento de INSS e FGTS", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-20", "notes": "Todo dia 20 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oyxn8ds", "folder": "Nutra", "title": "Pagamento de Folha", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-05-30", "notes": "Todo dia 30 — antecipar se cair em fds/feriado", "comments": [], "attachments": []}, {"id": "mpfus3oysokie", "folder": "Ki-Delícia", "title": "Emitir guia do MEI", "priority": "alta", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-10", "notes": "Todo dia 10", "comments": [], "attachments": []}, {"id": "mpfus3oylu4u9", "folder": "AD Telecom", "title": "Enviar pagamentos do dia, baixas dos caixas da loja e atualização no grupo financeiro sobre valor em caixa", "priority": "alta", "status": "pendente", "recurrence": "diaria", "dueDate": "2026-05-21", "notes": "Todos os dias úteis", "comments": [], "attachments": []}, {"id": "mpfus3oylddm2", "folder": "AD Telecom", "title": "Nota de Câmara de Jundiá, Vila Flor e Tibau", "priority": "media", "status": "pendente", "recurrence": "mensal", "dueDate": "2026-06-15", "notes": "Todo dia 15", "comments": [], "attachments": []}];
-
-  const backup = localStorage.getItem('gestaoplena_tasks_backup');
-  if (backup) {
-    try {
-      const saved = JSON.parse(backup);
-      tasks = Array.isArray(saved) ? saved : EMBEDDED_TASKS;
-      setSyncBadge('✓ Dados carregados');
-    } catch(e) {
-      tasks = EMBEDDED_TASKS;
-    }
-  } else {
-    tasks = EMBEDDED_TASKS;
-    localStorage.setItem('gestaoplena_tasks_backup', JSON.stringify(tasks));
+let lastKnownDate = null;
+function checkDateRollover(){
+  const tod = today();
+  if(lastKnownDate && lastKnownDate !== tod){
+    advanceOverdueRecurring();
+    renderAll();
+    showToast('Novo dia — lista atualizada');
   }
-
-  // ✅ CORREÇÃO: avança automaticamente datas de tarefas recorrentes vencidas
-  advanceRecurringDates();
-  loadCustomFolders();
-  render();
-  renderGPExtra();
+  lastKnownDate = tod;
 }
+function init(){
+  loadData();
+  advanceOverdueRecurring();
+  renderAll();
+  lastKnownDate = today();
+  setInterval(checkDateRollover, 60000);
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) checkDateRollover(); });
 
+  const savedSyncCode = localStorage.getItem(SYNC_CODE_KEY);
+  if(savedSyncCode && db){
+    syncCode = savedSyncCode;
+    attachSyncListeners();
+  }
+}
 init();
 </script>
-<script>
-window.gapiLoaded = gapiLoaded;
-window.gsiLoaded = gsiLoaded;
-</script>
-<script src="./Gestão Plena — Gerenciador_files/api.js.download" onload="gapiLoaded()" gapi_processed="true"></script>
-<script src="./Gestão Plena — Gerenciador_files/client" onload="gsiLoaded()"></script>
-
-
-<iframe id="apiproxy975f8f429b54857c73b48920c5243a49e8ed89100.2165928595" name="apiproxy975f8f429b54857c73b48920c5243a49e8ed89100.2165928595" src="./Gestão Plena — Gerenciador_files/proxy.html" tabindex="-1" aria-hidden="true" style="width: 1px; height: 1px; position: absolute; top: -100px; display: none;"></iframe></body></html>
+</body>
+</html>
