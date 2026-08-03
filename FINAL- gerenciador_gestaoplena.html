@@ -6,8 +6,9 @@
 <title>Gestão Plena — Gerenciador</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Parisienne&display=swap');
 
 :root{
   --bordeaux:#6B1B2A;
@@ -15,31 +16,41 @@
   --marsala:#964F4C;
   --cream:#FAF3E0;
   --gold:#C9A96E;
+  --gold-dark:#8C6A3D;
   --white:#FFFFFF;
   --text:#3A2A2C;
-  --text-soft:#8A7873;
-  --danger:#A8442E;
-  --danger-bg:#F6E7E1;
-  --warn-bg:#F7EDD8;
+  --text-soft:#9A8B84;
+  --danger:#8C3226;
+  --danger-bg:#F4E5E1;
+  --warn-bg:#F5ECD9;
   --warn-text:#8C6A3D;
-  --ok:#6E8C63;
-  --ok-bg:#EEF2E8;
-  --border:#EBDFC9;
-  --radius:14px;
-  --shadow:0 2px 12px rgba(107,27,42,0.05);
+  --ok:#7A5A3A;
+  --ok-bg:#F3ECE4;
+  --alta-bg:#F4E3E4;
+  --alta-text:#6B1B2A;
+  --media-bg:#F5ECD9;
+  --media-text:#8C6A3D;
+  --baixa-bg:#F2EAE3;
+  --baixa-text:#9C8272;
+  --border:#EFE4D2;
+  --radius:16px;
+  --shadow:0 1px 8px rgba(107,27,42,0.04);
+  --font-display:'Cormorant Garamond', serif;
+  --font-body:'Jost', sans-serif;
 }
 *{box-sizing:border-box;}
 body{
   margin:0;
-  font-family:'DM Sans',sans-serif;
+  font-family:var(--font-body);
+  font-weight:300;
   background:var(--cream);
   color:var(--text);
   display:flex;
   min-height:100vh;
 }
-h1,h2,h3,.serif{font-family:'Libre Baskerville',serif;}
+h1,h2,h3,.serif{font-family:var(--font-display);font-weight:500;letter-spacing:.2px;}
 button{font-family:inherit;cursor:pointer;border:none;}
-input,select,textarea{font-family:inherit;}
+input,select,textarea{font-family:inherit;font-weight:300;}
 
 /* ===== SIDEBAR ===== */
 #sidebar{
@@ -51,10 +62,13 @@ input,select,textarea{font-family:inherit;}
   display:flex;
   flex-direction:column;
   gap:22px;
+  font-family:var(--font-display);
+  font-style:italic;
 }
-.brand h1{font-size:22px;margin:0;color:#fff;letter-spacing:.3px;}
-.brand h1 em{font-style:italic;color:var(--gold);}
-.brand p{margin:2px 0 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.65;}
+#sidebar input{font-style:normal;}
+.brand h1{font-size:29px;font-weight:400;font-style:normal;margin:0;color:#fff;letter-spacing:.3px;}
+.brand h1 em{font-family:'Parisienne',cursive;font-style:normal;font-weight:400;font-size:1.5em;color:var(--gold);vertical-align:-3px;margin-left:2px;}
+.brand p{margin:4px 0 0;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;opacity:.55;font-weight:300;font-style:normal;}
 .save-badge{
   font-size:11px;
   background:rgba(255,255,255,0.08);
@@ -67,33 +81,49 @@ input,select,textarea{font-family:inherit;}
   color:var(--gold);
   width:fit-content;
 }
-.side-actions{display:flex;gap:8px;}
+.side-actions{display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.12);}
 .side-btn{
   flex:1;
-  background:rgba(255,255,255,0.08);
+  background:transparent;
   color:var(--cream);
-  border:1px solid rgba(255,255,255,0.18);
-  border-radius:8px;
-  padding:8px 6px;
-  font-size:12px;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
+  opacity:.8;
+  border:none;
+  border-bottom:1px solid rgba(255,255,255,0.12);
+  padding:11px 4px;
+  font-size:13.5px;
+  font-weight:400;
+  letter-spacing:.2px;
+  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:7px;
+  transition:opacity .2s ease, color .2s ease;
 }
-.side-btn:hover{background:rgba(255,255,255,0.16);}
+.side-actions .side-btn:first-child{border-right:1px solid rgba(255,255,255,0.12);}
+.side-btn:hover{opacity:1;color:var(--gold);}
 
-.nav-section{display:flex;flex-direction:column;gap:2px;}
-.nav-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.5;margin:10px 0 4px 4px;}
+.nav-section{display:flex;flex-direction:column;gap:1px;}
+.nav-label{font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;opacity:.45;margin:14px 0 6px 4px;font-weight:300;font-style:normal;}
 .nav-item{
   display:flex;align-items:center;justify-content:space-between;
   padding:9px 10px;border-radius:8px;color:var(--cream);
-  background:transparent;font-size:14px;text-align:left;width:100%;
+  background:transparent;font-size:15.5px;font-weight:400;letter-spacing:.1px;text-align:left;width:100%;
+  transition:background .2s ease;
 }
 .nav-item:hover{background:rgba(255,255,255,0.08);}
-.nav-item.active{background:rgba(255,255,255,0.16);font-weight:600;}
+.nav-item.active{background:rgba(255,255,255,0.16);font-weight:500;}
 .nav-item .label{display:flex;align-items:center;gap:8px;}
+.icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:-3px;}
+.icon svg{display:block;}
 .nav-item .count{
   font-size:11px;background:rgba(0,0,0,0.2);
   border-radius:10px;padding:1px 8px;min-width:20px;text-align:center;
 }
+.nav-item-wrapper{display:flex;align-items:center;gap:2px;}
+.nav-item-wrapper .nav-item{flex:1;}
+.nav-edit-btn{
+  background:transparent;color:var(--cream);opacity:.4;
+  width:26px;height:26px;flex-shrink:0;border-radius:6px;font-size:12px;
+}
+.nav-edit-btn:hover{opacity:1;background:rgba(255,255,255,0.1);}
+.nav-edit-btn.has-link{opacity:.85;}
 .folder-add{
   margin-top:4px;background:transparent;color:var(--gold);
   font-size:13px;padding:8px 10px;text-align:left;opacity:.8;border-radius:8px;
@@ -103,30 +133,32 @@ input,select,textarea{font-family:inherit;}
 .sidebar-footer{margin-top:auto;font-size:11px;opacity:.45;line-height:1.5;}
 
 /* ===== MAIN ===== */
-#main{flex:1;padding:32px 40px;overflow-y:auto;}
-.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
-.topbar h2{font-size:15px;letter-spacing:1px;text-transform:uppercase;color:var(--marsala);margin:0;}
-.topbar-actions{display:flex;gap:10px;}
+#main{flex:1;padding:36px 44px;overflow-y:auto;}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;gap:16px;flex-wrap:wrap;}
+.topbar h2{font-family:var(--font-display);font-size:26px;font-weight:500;letter-spacing:.2px;color:var(--bordeaux);margin:0;text-transform:none;}
+.topbar-actions{display:flex;gap:8px;}
 .btn-primary{
-  background:var(--bordeaux);color:#fff;padding:11px 20px;border-radius:9px;
-  font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;
+  background:var(--bordeaux);color:#fff;padding:10px 20px;border-radius:8px;
+  font-size:13px;font-weight:400;letter-spacing:.3px;display:flex;align-items:center;gap:6px;
+  transition:background .2s ease;
 }
 .btn-primary:hover{background:var(--bordeaux-dark);}
 .btn-ghost{
-  background:#fff;color:var(--bordeaux);border:1px solid var(--border);
-  padding:11px 16px;border-radius:9px;font-size:14px;font-weight:600;
+  background:transparent;color:var(--marsala);border:1px solid var(--border);
+  padding:10px 16px;border-radius:8px;font-size:13px;font-weight:400;letter-spacing:.3px;
+  transition:border-color .2s ease, background .2s ease;
 }
-.btn-ghost:hover{background:var(--cream);}
+.btn-ghost:hover{background:rgba(255,255,255,.5);border-color:var(--gold);}
 
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
 .stat-card{
   background:#fff;border:1px solid var(--border);border-radius:var(--radius);
-  padding:16px 18px;box-shadow:var(--shadow);
+  padding:18px 20px;box-shadow:var(--shadow);
 }
-.stat-card .num{font-family:'Libre Baskerville',serif;font-size:30px;font-weight:700;color:var(--bordeaux);}
+.stat-card .num{font-family:var(--font-display);font-size:34px;font-weight:500;color:var(--bordeaux);}
 .stat-card.warn .num{color:var(--danger);}
 .stat-card.soon .num{color:#A9824F;}
-.stat-card .lbl{font-size:12px;color:var(--text-soft);margin-top:2px;}
+.stat-card .lbl{font-size:11px;letter-spacing:.5px;color:var(--text-soft);margin-top:2px;}
 
 /* ===== NOTAS RÁPIDAS (coluna fixa permanente) ===== */
 #notesPanel{
@@ -136,7 +168,7 @@ input,select,textarea{font-family:inherit;}
   padding:28px 22px;overflow-y:auto;
 }
 .notes-panel-header{margin-bottom:4px;}
-.notes-panel-header h3{margin:0;font-size:16px;letter-spacing:.5px;color:var(--marsala);font-weight:600;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
+.notes-panel-header h3{margin:0;font-size:15px;letter-spacing:1.5px;color:var(--marsala);font-weight:400;font-family:var(--font-body);text-transform:uppercase;}
 .notes-add-link{
   background:transparent;color:var(--gold);border:none;font-size:13px;
   padding:10px 0;text-align:left;font-weight:600;
@@ -150,8 +182,30 @@ input,select,textarea{font-family:inherit;}
   white-space:pre-line;
 }
 .note-del{position:absolute;top:8px;right:8px;background:transparent;color:var(--text-soft);font-size:11px;width:18px;height:18px;border-radius:4px;opacity:.5;}
+.note-to-task-btn{
+  display:block;margin-top:8px;background:transparent;color:var(--gold);
+  font-size:11px;font-weight:600;padding:0;border:none;
+}
+.note-to-task-btn:hover{color:var(--marsala);text-decoration:underline;}
 .note-del:hover{opacity:1;background:rgba(0,0,0,0.05);}
 .notes-empty{font-size:12px;color:var(--text-soft);font-style:italic;margin-top:10px;}
+.notes-day-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:16px 0 10px;padding:10px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.notes-day-arrow{
+  background:transparent;color:var(--marsala);font-size:18px;width:30px;height:30px;
+  border-radius:6px;flex-shrink:0;
+}
+.notes-day-arrow:hover{background:rgba(107,27,42,0.06);}
+.notes-day-label{text-align:center;flex:1;}
+.notes-day-main{font-family:var(--font-display);font-size:14px;color:var(--bordeaux);line-height:1.3;text-transform:capitalize;}
+.notes-day-today{
+  background:transparent;color:var(--gold);font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:10px;margin-top:2px;
+}
+.notes-day-today:hover{background:rgba(201,169,110,0.15);}
+.notes-day-today.current{display:none;}
 
 /* ===== SINCRONIZAÇÃO ===== */
 .sync-code-box{
@@ -159,7 +213,7 @@ input,select,textarea{font-family:inherit;}
   padding:14px;text-align:center;margin:14px 0;
 }
 .sync-code-box .code{
-  font-family:'DM Sans',monospace;font-size:20px;font-weight:700;letter-spacing:1px;
+  font-family:var(--font-body),monospace;font-size:20px;font-weight:700;letter-spacing:1px;
   color:var(--bordeaux);word-break:break-all;
 }
 .sync-status{
@@ -186,6 +240,24 @@ input,select,textarea{font-family:inherit;}
   #printHeader{display:block;}
 }
 
+/* ===== RELATÓRIO ===== */
+#reportContainer{
+  display:none;background:#fff;padding:30px;width:800px;
+}
+#reportTitleText{font-family:var(--font-display);font-size:22px;color:var(--bordeaux);margin-bottom:18px;border-bottom:2px solid var(--gold);padding-bottom:10px;}
+.report-item{padding:10px 0;border-bottom:1px solid #eee;font-size:14px;}
+.report-item strong{color:var(--text);}
+.report-item .meta{font-size:12px;color:var(--text-soft);margin-top:2px;}
+body.report-mode #sidebar, body.report-mode #notesPanel, body.report-mode .topbar,
+body.report-mode .stats-row, body.report-mode .filter-row, body.report-mode #taskList,
+body.report-mode #printHeader, body.report-mode #storageWarningBanner,
+body.report-mode #backupReminderBanner, body.report-mode #bulkActionsBar,
+body.report-mode #clientSummary{
+  display:none !important;
+}
+body.report-mode #reportContainer{display:block;}
+body.report-mode #main{padding:0;background:#fff;}
+
 .filter-row{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;}
 .tab{
@@ -199,39 +271,43 @@ input,select,textarea{font-family:inherit;}
 }
 .search-box input{border:none;outline:none;flex:1;background:transparent;}
 
-#taskList{display:flex;flex-direction:column;gap:10px;}
+#taskList{display:flex;flex-direction:column;gap:8px;}
 .task-card{
-  background:#fff;border:1px solid var(--border);border-left:4px solid var(--gold);
-  border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);
-  display:flex;gap:12px;align-items:flex-start;
+  background:#fff;border:1px solid var(--border);border-left:2px solid var(--gold);
+  border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);
+  display:flex;gap:14px;align-items:flex-start;transition:box-shadow .2s ease;
 }
+.task-card:hover{box-shadow:0 2px 14px rgba(107,27,42,0.07);}
 .task-card.overdue{border-left-color:var(--danger);background:var(--danger-bg);}
 .task-card.today{border-left-color:var(--gold);background:var(--warn-bg);}
 .task-card.soon{border-left-color:#C9A96E;background:#F9F4E9;}
-.task-card.done{opacity:.6;}
-.folder-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;}
+.task-card.done{opacity:.55;}
+.folder-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;}
 .task-check{
-  width:20px;height:20px;border-radius:50%;border:2px solid var(--marsala);
-  margin-top:2px;flex-shrink:0;background:transparent;
+  width:19px;height:19px;border-radius:50%;border:1.3px solid var(--marsala);
+  margin-top:2px;flex-shrink:0;background:transparent;transition:all .2s ease;
 }
 .task-check.checked{background:var(--ok);border-color:var(--ok);position:relative;}
 .task-check.checked::after{
-  content:'✓';color:#fff;font-size:12px;position:absolute;inset:0;
+  content:'✓';color:#fff;font-size:11px;position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
 }
 .task-body{flex:1;min-width:0;}
-.task-title{font-size:15px;font-weight:600;color:var(--text);cursor:pointer;}
+.task-title{font-size:16px;font-weight:400;color:var(--text);cursor:pointer;letter-spacing:.1px;}
 .task-card.done .task-title{text-decoration:line-through;}
-.task-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center;}
-.badge{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:600;display:inline-flex;align-items:center;gap:4px;}
+.task-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px;align-items:center;}
+.badge{font-size:10.5px;padding:3px 10px;border-radius:20px;font-weight:400;letter-spacing:.2px;display:inline-flex;align-items:center;gap:4px;}
 .badge-folder{background:#F3E7DC;color:var(--marsala);}
 .badge-date{background:#F3E7DC;color:var(--text-soft);}
 .task-card.overdue .badge-date{background:var(--danger);color:#fff;}
 .task-card.today .badge-date{background:var(--gold);color:#fff;}
-.badge-rec{background:#EFEFEF;color:var(--text-soft);}
-.badge-alta{background:#FBE9E7;color:var(--danger);}
-.badge-media{background:#FFF3CD;color:var(--warn-text);}
-.badge-baixa{background:var(--ok-bg);color:var(--ok);}
+.badge-rec{background:#F2EEE6;color:var(--text-soft);}
+.badge-alta{background:var(--alta-bg);color:var(--alta-text);}
+.badge-media{background:var(--media-bg);color:var(--media-text);}
+.badge-baixa{background:var(--baixa-bg);color:var(--baixa-text);}
+.badge-link{background:var(--warn-bg);color:var(--gold-dark);cursor:pointer;border:none;font-family:inherit;}
+.badge-link:hover{background:#EFDFC0;}
+#selectModeBtn.active-mode{background:var(--bordeaux);color:#fff;border-color:var(--bordeaux);}
 .task-notes{font-size:12px;color:var(--text-soft);margin-top:5px;}
 .task-actions{display:flex;gap:6px;flex-shrink:0;}
 .icon-btn{
@@ -256,9 +332,9 @@ input,select,textarea{font-family:inherit;}
   background:#fff;border-radius:16px;width:100%;max-width:520px;
   max-height:90vh;overflow-y:auto;padding:28px;
 }
-.modal h3{margin:0 0 18px;font-size:19px;color:var(--bordeaux);}
+.modal h3{margin:0 0 18px;font-family:var(--font-display);font-size:24px;font-weight:500;color:var(--bordeaux);}
 .form-group{margin-bottom:14px;}
-.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-soft);margin-bottom:5px;}
+.form-group label{display:block;font-size:11px;letter-spacing:.5px;font-weight:400;color:var(--text-soft);margin-bottom:6px;}
 .form-group input,.form-group select,.form-group textarea{
   width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;
   font-size:14px;background:var(--cream);color:var(--text);
@@ -293,26 +369,30 @@ input,select,textarea{font-family:inherit;}
     <p>Gerenciador de Tarefas</p>
   </div>
   <div class="save-badge" id="saveBadge">● Pronto</div>
-  <button class="side-btn" style="width:100%;flex:none" onclick="openSyncModal()">🔄 Sincronização entre aparelhos</button>
+  <button class="side-btn" style="width:100%;flex:none" onclick="openSyncModal()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg></span> Sincronização entre aparelhos</button>
   <div class="side-actions">
-    <button class="side-btn" onclick="exportData()">⬇ Exportar</button>
-    <button class="side-btn" onclick="document.getElementById('importInput').click()">⬆ Importar</button>
+    <button class="side-btn" onclick="exportData()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span> Exportar</button>
+    <button class="side-btn" onclick="document.getElementById('importInput').click()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0 4 4m-4-4L8 7M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span> Importar</button>
     <input type="file" id="importInput" accept="application/json" style="display:none" onchange="importData(event)">
   </div>
+  <button class="side-btn" style="width:100%;flex:none" onclick="openVersionHistoryModal()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span> Histórico de versões</button>
 
   <div class="nav-section">
     <div class="nav-label">Visão Geral</div>
     <button class="nav-item active" data-view="todas" onclick="setView('todas')">
-      <span class="label">📋 Todas as Tarefas</span><span class="count" id="cnt-todas">0</span>
+      <span class="label"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span> Todas as Tarefas</span><span class="count" id="cnt-todas">0</span>
     </button>
     <button class="nav-item" data-view="hoje" onclick="setView('hoje')">
-      <span class="label">📅 Hoje</span><span class="count" id="cnt-hoje">0</span>
+      <span class="label"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span> Hoje</span><span class="count" id="cnt-hoje">0</span>
     </button>
     <button class="nav-item" data-view="embreve" onclick="setView('embreve')">
-      <span class="label">⏳ Vence em breve</span><span class="count" id="cnt-embreve">0</span>
+      <span class="label"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14M5 22h14M6 2c0 5 12 5 12 10S6 17 6 22M18 2c0 5-12 5-12 10s12 5 12 10"/></svg></span> Vence em breve</span><span class="count" id="cnt-embreve">0</span>
     </button>
     <button class="nav-item" data-view="vencidas" onclick="setView('vencidas')">
-      <span class="label">⚠️ Vencidas</span><span class="count" id="cnt-vencidas">0</span>
+      <span class="label"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span> Vencidas</span><span class="count" id="cnt-vencidas">0</span>
+    </button>
+    <button class="nav-item" data-view="lixeira" onclick="setView('lixeira')">
+      <span class="label"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></span> Lixeira</span><span class="count" id="cnt-lixeira">0</span>
     </button>
   </div>
 
@@ -331,11 +411,18 @@ input,select,textarea{font-family:inherit;}
 
 <div id="main">
   <div id="storageWarningBanner" style="display:none;background:#A8442E;color:#fff;padding:14px 18px;border-radius:10px;margin-bottom:18px;font-size:14px;line-height:1.6;">
-    <strong>⚠️ Seu navegador está bloqueando o salvamento das tarefas!</strong><br>
+    <strong><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span> Seu navegador está bloqueando o salvamento das tarefas!</strong><br>
     Suas tarefas NÃO estão sendo guardadas. Pra corrigir:<br>
     1. Clica no ícone de cadeado/informações ao lado do endereço do site (barra de endereço, lá em cima)<br>
     2. Procura "Cookies e dados do site" e escolhe "Permitir"<br>
     3. Recarrega a página (F5) e tenta cadastrar a tarefa de novo
+  </div>
+  <div id="backupReminderBanner" style="display:none;align-items:center;justify-content:space-between;gap:12px;background:var(--warn-bg);color:var(--warn-text);padding:12px 18px;border-radius:10px;margin-bottom:18px;font-size:13px;">
+    <span><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></span> Já faz um tempo que você não exporta um backup. Vale clicar em "Exportar" na lateral, por segurança.</span>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <button class="btn-ghost" onclick="exportData()">Exportar agora</button>
+      <button class="icon-btn" onclick="dismissBackupReminder()" title="Lembrar depois">✕</button>
+    </div>
   </div>
   <div id="printHeader">
     <h2>Gestão Plena — Checklist do Dia</h2>
@@ -344,12 +431,24 @@ input,select,textarea{font-family:inherit;}
   <div class="topbar">
     <div>
       <h2 id="viewTitle">Todas as Tarefas</h2>
+      <div id="clientSummary" style="font-size:13px;color:var(--text-soft);margin-top:2px;"></div>
     </div>
     <div class="topbar-actions">
-      <button class="btn-ghost" onclick="printChecklist()">🖨 Checklist do Dia</button>
+      <button class="btn-ghost" id="selectModeBtn" onclick="toggleSelectionMode()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span> Selecionar</button>
+      <button class="btn-ghost" onclick="printChecklist()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span> Checklist do Dia</button>
+      <button class="btn-ghost" onclick="openWhatsappModal()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></span> Resumo no WhatsApp</button>
+      <button class="btn-ghost" onclick="openReportModal()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1"/></svg></span> Relatório</button>
       <button class="btn-ghost" onclick="openBulkModal()">+ Rotina em Lote</button>
       <button class="btn-primary" onclick="openTaskModal()">+ Nova Tarefa</button>
     </div>
+  </div>
+
+  <div id="bulkActionsBar" style="display:none;align-items:center;gap:10px;background:#fff;border:1px solid var(--gold);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:13px;">
+    <strong id="selectedCount">0</strong>&nbsp;selecionada(s)
+    <button class="btn-ghost" onclick="bulkComplete()">✓ Marcar concluídas</button>
+    <button class="btn-ghost" onclick="bulkMoveClient()">→ Mover cliente</button>
+    <button class="btn-danger-ghost" onclick="bulkDeleteSelected()"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></span> Mover p/ lixeira</button>
+    <button class="btn-ghost" style="margin-left:auto" onclick="toggleSelectionMode()">Cancelar</button>
   </div>
 
   <div class="stats-row">
@@ -367,7 +466,7 @@ input,select,textarea{font-family:inherit;}
       <button class="tab" data-status="andamento" onclick="setStatusFilter('andamento')">Em Andamento</button>
       <button class="tab" data-status="concluida" onclick="setStatusFilter('concluida')">Concluídas</button>
     </div>
-    <div class="search-box">🔍 <input id="searchInput" placeholder="Buscar tarefa..." oninput="render()"></div>
+    <div class="search-box"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> <input id="searchInput" placeholder="Buscar tarefa..." oninput="render()"></div>
   </div>
 
   <div id="taskList"></div>
@@ -375,7 +474,17 @@ input,select,textarea{font-family:inherit;}
 
 <div id="notesPanel">
   <div class="notes-panel-header"><h3>Notas Rápidas</h3></div>
-  <button type="button" class="notes-add-link" onclick="addNote()">+ Adicionar nota</button>
+
+  <div class="notes-day-nav">
+    <button class="notes-day-arrow" onclick="shiftNotesDay(-1)">‹</button>
+    <div class="notes-day-label">
+      <div class="notes-day-main" id="notesDayLabel"></div>
+      <button class="notes-day-today" id="notesTodayLink" onclick="goToTodayNotes()">Hoje</button>
+    </div>
+    <button class="notes-day-arrow" onclick="shiftNotesDay(1)">›</button>
+  </div>
+
+  <button type="button" class="notes-add-link" onclick="addNote()">+ Adicionar lembrete deste dia</button>
   <div class="notes-list" id="notesGrid"></div>
 </div>
 
@@ -447,12 +556,122 @@ input,select,textarea{font-family:inherit;}
         <label>Observações</label>
         <textarea id="fNotes" rows="2" placeholder="Opcional"></textarea>
       </div>
+      <div class="form-group">
+        <label>Link (opcional)</label>
+        <input type="url" id="fLink" placeholder="https://drive.google.com/...">
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-danger-ghost" id="deleteBtn" style="display:none" onclick="deleteCurrentTask()">Excluir</button>
         <button type="button" class="btn-ghost" onclick="closeTaskModal()">Cancelar</button>
         <button type="submit" class="btn-primary">Salvar</button>
       </div>
     </form>
+  </div>
+</div>
+
+<div class="overlay" id="whatsappOverlay">
+  <div class="modal" style="max-width:440px">
+    <h3>Enviar Resumo no WhatsApp</h3>
+    <div class="form-group">
+      <label>O que enviar?</label>
+      <select id="waType" onchange="onWaTypeChange()">
+        <option value="hoje">Agenda de hoje</option>
+        <option value="amanha">Agenda de amanhã</option>
+        <option value="pendentes">Todas as pendentes</option>
+        <option value="avencer_cliente">A vencer — por cliente</option>
+        <option value="vencidas_cliente">Vencidas — por cliente</option>
+      </select>
+    </div>
+    <div class="form-group" id="waClientGroup" style="display:none">
+      <label>Cliente / Seção</label>
+      <select id="waClient"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeWhatsappModal()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmSendWhatsapp()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="reportOverlay">
+  <div class="modal" style="max-width:480px">
+    <h3>Gerar Relatório</h3>
+    <div class="form-group">
+      <label>Período</label>
+      <select id="reportPeriod" onchange="onReportPeriodChange()">
+        <option value="dia">Um dia específico</option>
+        <option value="semana">Semana</option>
+        <option value="mes">Mês</option>
+        <option value="vencidas">Vencidas</option>
+        <option value="todas">Todas as tarefas</option>
+      </select>
+    </div>
+    <div class="form-group" id="reportDateGroup">
+      <label>Data de referência</label>
+      <input type="date" id="reportRefDate">
+    </div>
+    <div class="form-group" id="reportMonthGroup" style="display:none">
+      <label>Mês</label>
+      <input type="month" id="reportMonth">
+    </div>
+    <div class="form-group">
+      <label>Cliente / Seção (opcional)</label>
+      <select id="reportClient"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeReportModal()">Cancelar</button>
+      <button class="btn-ghost" onclick="exportReportImage()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span> Exportar Imagem</button>
+      <button class="btn-primary" onclick="exportReportPDF()"><span class="icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1"/></svg></span> Exportar PDF</button>
+    </div>
+  </div>
+</div>
+
+<div id="reportContainer">
+  <div id="reportTitleText"></div>
+  <div id="reportBody"></div>
+</div>
+
+<div class="overlay" id="clientLinksOverlay">
+  <div class="modal" style="max-width:440px">
+    <h3 id="clientLinksTitle">Links</h3>
+    <div id="clientLinksList" style="margin-bottom:14px;"></div>
+    <div class="form-group">
+      <label>Nome do link</label>
+      <input type="text" id="newLinkLabel" placeholder="Ex: Google Drive, WhatsApp, Painel...">
+    </div>
+    <div class="form-group">
+      <label>URL</label>
+      <input type="url" id="newLinkUrl" placeholder="https://...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeClientLinksModal()">Fechar</button>
+      <button class="btn-primary" onclick="addClientLink()">+ Adicionar link</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="moveClientOverlay">
+  <div class="modal" style="max-width:400px">
+    <h3>Mover para...</h3>
+    <div class="form-group">
+      <label>Cliente ou seção de destino</label>
+      <select id="moveClientSelect"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeMoveClientModal()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmBulkMoveClient()">Mover</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="versionHistoryOverlay">
+  <div class="modal" style="max-width:520px">
+    <h3>Histórico de Versões</h3>
+    <p style="font-size:12px;color:var(--text-soft);margin-top:-12px;margin-bottom:10px;">O sistema guarda automaticamente as últimas 8 versões dos seus dados. Restaure se algo der errado.</p>
+    <div id="versionHistoryList" style="max-height:400px;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-primary" onclick="closeVersionHistoryModal()">Fechar</button>
+    </div>
   </div>
 </div>
 
@@ -484,7 +703,7 @@ input,select,textarea{font-family:inherit;}
       <div class="divider-or">ou</div>
       <div class="form-group">
         <label>Já tenho um código — conectar este aparelho</label>
-        <p style="font-size:12px;color:var(--text-soft);margin:0 0 8px">⚠️ Isso substitui os dados deste aparelho pelos da nuvem.</p>
+        <p style="font-size:12px;color:var(--text-soft);margin:0 0 8px"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span> Isso substitui os dados deste aparelho pelos da nuvem.</p>
         <input type="text" id="syncCodeInput" placeholder="Cole o código aqui">
         <button class="btn-ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="connectWithSyncCode()">Conectar</button>
       </div>
@@ -558,12 +777,20 @@ input,select,textarea{font-family:inherit;}
 
 <script>
 // ========== ESTADO ==========
+const ICO = {
+  calendar: '<span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>',
+  alert: '<span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span>',
+  hourglass: '<span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14M5 22h14M6 2c0 5 12 5 12 10S6 17 6 22M18 2c0 5-12 5-12 10s12 5 12 10"/></svg></span>',
+  link: '<span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1-1"/></svg></span>'
+};
 const STORAGE_KEY = 'gestaoplena_gerenciador_v2';
 const SYNC_CODE_KEY = 'gestaoplena_sync_code';
 let tasks = [];
 let folders = [];
 let notes = [];
 let sections = [];
+let trash = [];
+let clientLinks = {};
 let syncCode = null;
 let syncTasksUnsub = null;
 let syncMetaUnsub = null;
@@ -680,21 +907,22 @@ function advanceOverdueRecurring(){
 
 // ========== PERSISTÊNCIA ==========
 function saveData(){
-  const payload = JSON.stringify({tasks, folders, notes, sections, savedAt: new Date().toISOString()});
+  const payload = JSON.stringify({tasks, folders, notes, sections, trash, clientLinks, savedAt: new Date().toISOString()});
   try{
     localStorage.setItem(STORAGE_KEY, payload);
     // Confirma de verdade que gravou, lendo de volta (não confia só na ausência de erro)
     const readBack = localStorage.getItem(STORAGE_KEY);
     if(readBack !== payload){
       showStorageWarning();
-      setSaveBadge('⚠ Não foi possível salvar');
+      setSaveBadge('Não foi possível salvar');
       return;
     }
     hideStorageWarning();
     setSaveBadge('✓ Salvo às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+    saveVersionSnapshot();
   }catch(e){
     showStorageWarning();
-    setSaveBadge('⚠ Erro ao salvar');
+    setSaveBadge('Erro ao salvar');
   }
 }
 function showStorageWarning(){
@@ -705,25 +933,108 @@ function hideStorageWarning(){
   const el = document.getElementById('storageWarningBanner');
   if(el) el.style.display = 'none';
 }
-const TIPS_NOTE_ID = 'dica-fixa-uso-v1';
-const TIPS_NOTE_TEXT = `📌 Como usar bem o gerenciador
-
-• Abra pela view "Hoje" — é o que precisa resolver no dia.
-• Confira "Vence em breve" de manhã, pra já se planejar (INSS, FGTS, prazos).
-• "Vencidas" deve ficar sempre vazia — se aparecer algo, foi escapou do controle.
-
-• Rotinas repetidas de um cliente: use "+ Rotina em Lote" ao invés de cadastrar uma por uma.
-• Tarefas semanais: o sistema ajusta a data sozinha se você errar o dia inicial.
-• Separe bem Clientes de Seções internas (Financeiro, Administrativo etc.).
-
-• Clique em "Exportar" pelo menos 1x por semana e guarde num lugar seguro.
-• Sincronização entre aparelhos: gere o código sempre a partir do aparelho com os dados reais — nunca ao contrário. Na dúvida, exporte antes de conectar.
-• "Checklist do Dia" imprime só o que vence hoje, sem abrir o sistema todo.`;
-
-function ensureTipsNote(){
-  if(!notes.some(n=>n.id===TIPS_NOTE_ID)){
-    notes.push({id: TIPS_NOTE_ID, text: TIPS_NOTE_TEXT, createdAt: new Date(0).toISOString()});
+const LAST_EXPORT_KEY = 'gestaoplena_last_export';
+const REMINDER_DISMISS_KEY = 'gestaoplena_reminder_dismissed';
+function checkBackupReminder(){
+  const lastExport = localStorage.getItem(LAST_EXPORT_KEY);
+  const dismissedAt = localStorage.getItem(REMINDER_DISMISS_KEY);
+  const now = Date.now();
+  if(dismissedAt && (now - new Date(dismissedAt).getTime()) < 24*60*60*1000) return; // dispensado nas últimas 24h
+  const sevenDays = 7*24*60*60*1000;
+  const neverExported = !lastExport;
+  const tooOld = lastExport && (now - new Date(lastExport).getTime()) > sevenDays;
+  if((neverExported && tasks.length > 0) || tooOld){
+    const el = document.getElementById('backupReminderBanner');
+    if(el) el.style.display = 'flex';
   }
+}
+function hideBackupReminder(){
+  const el = document.getElementById('backupReminderBanner');
+  if(el) el.style.display = 'none';
+}
+function dismissBackupReminder(){
+  localStorage.setItem(REMINDER_DISMISS_KEY, new Date().toISOString());
+  hideBackupReminder();
+}
+
+function purgeOldTrash(){
+  const cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000); // 30 dias
+  trash = trash.filter(t => new Date(t.deletedAt).getTime() > cutoff);
+}
+
+// ========== HISTÓRICO AUTOMÁTICO DE VERSÕES ==========
+const VERSION_HISTORY_KEY = 'gestaoplena_version_history';
+const MAX_VERSION_SNAPSHOTS = 8;
+function saveVersionSnapshot(){
+  try{
+    const historyRaw = localStorage.getItem(VERSION_HISTORY_KEY);
+    let history = historyRaw ? JSON.parse(historyRaw) : [];
+    const newContent = JSON.stringify({tasks, folders, notes, sections, trash, clientLinks});
+    const lastSnap = history[history.length-1];
+    if(lastSnap){
+      const lastContent = JSON.stringify({tasks: lastSnap.tasks, folders: lastSnap.folders, notes: lastSnap.notes, sections: lastSnap.sections, trash: lastSnap.trash});
+      if(lastContent === newContent) return; // nada mudou, não duplica
+    }
+    history.push({savedAt: new Date().toISOString(), tasks, folders, notes, sections, trash, clientLinks});
+    if(history.length > MAX_VERSION_SNAPSHOTS) history = history.slice(history.length - MAX_VERSION_SNAPSHOTS);
+    localStorage.setItem(VERSION_HISTORY_KEY, JSON.stringify(history));
+  }catch(e){
+    console.error('Erro ao salvar histórico de versão:', e);
+  }
+}
+function getVersionHistory(){
+  try{
+    const raw = localStorage.getItem(VERSION_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function openVersionHistoryModal(){
+  const history = getVersionHistory().slice().reverse(); // mais recente primeiro
+  const container = document.getElementById('versionHistoryList');
+  container.innerHTML = '';
+  if(history.length === 0){
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-soft)">Ainda não há versões salvas. Elas aparecem aqui conforme você usa o sistema.</p>';
+  } else {
+    history.forEach((snap, revIdx)=>{
+      const realIdx = getVersionHistory().length - 1 - revIdx;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);';
+      const dateStr = new Date(snap.savedAt).toLocaleString('pt-BR');
+      const count = Array.isArray(snap.tasks) ? snap.tasks.length : 0;
+      row.innerHTML = `<div><strong style="font-size:13px">${dateStr}</strong><br><span style="font-size:12px;color:var(--text-soft)">${count} tarefa(s)</span></div>`;
+      const btn = document.createElement('button');
+      btn.className = 'btn-ghost';
+      btn.textContent = 'Restaurar';
+      btn.onclick = () => restoreVersionSnapshot(realIdx);
+      row.appendChild(btn);
+      container.appendChild(row);
+    });
+  }
+  document.getElementById('versionHistoryOverlay').classList.add('open');
+}
+function closeVersionHistoryModal(){
+  document.getElementById('versionHistoryOverlay').classList.remove('open');
+}
+function restoreVersionSnapshot(index){
+  const history = getVersionHistory();
+  const snap = history[index];
+  if(!snap) return;
+  if(!confirm(`Restaurar a versão de ${new Date(snap.savedAt).toLocaleString('pt-BR')}?\n\nIsso substitui os dados atuais deste aparelho.`)) return;
+  tasks = Array.isArray(snap.tasks) ? snap.tasks : [];
+  folders = Array.isArray(snap.folders) && snap.folders.length ? snap.folders : folders;
+  notes = Array.isArray(snap.notes) ? snap.notes : notes;
+  sections = Array.isArray(snap.sections) && snap.sections.length ? snap.sections : sections;
+  trash = Array.isArray(snap.trash) ? snap.trash : [];
+  saveData();
+  renderAll();
+  closeVersionHistoryModal();
+  showToast('Versão restaurada com sucesso');
+}
+const TIPS_NOTE_ID = 'dica-fixa-uso-v1';
+function removeTipsNote(){
+  const before = notes.length;
+  notes = notes.filter(n=>n.id!==TIPS_NOTE_ID);
+  return notes.length !== before;
 }
 
 function loadData(){
@@ -745,7 +1056,9 @@ function loadData(){
     folders = DEFAULT_FOLDERS.slice();
     notes = [];
     sections = DEFAULT_SECTIONS.slice();
-    ensureTipsNote();
+    trash = [];
+    clientLinks = {};
+    removeTipsNote(); migrateNotesDates(); migrateClientLinks();
     saveData();
     return;
   }
@@ -755,20 +1068,25 @@ function loadData(){
     folders = Array.isArray(parsed.folders) && parsed.folders.length ? parsed.folders : DEFAULT_FOLDERS.slice();
     notes = Array.isArray(parsed.notes) ? parsed.notes : [];
     sections = Array.isArray(parsed.sections) && parsed.sections.length ? parsed.sections : DEFAULT_SECTIONS.slice();
+    trash = Array.isArray(parsed.trash) ? parsed.trash : [];
+    clientLinks = (parsed.clientLinks && typeof parsed.clientLinks === 'object') ? parsed.clientLinks : {};
   }catch(e){
     tasks = [];
     folders = DEFAULT_FOLDERS.slice();
     notes = [];
     sections = DEFAULT_SECTIONS.slice();
+    trash = [];
+    clientLinks = {};
   }
-  ensureTipsNote();
+  purgeOldTrash();
+  removeTipsNote(); migrateNotesDates(); migrateClientLinks();
 }
 function setSaveBadge(text){
   document.getElementById('saveBadge').textContent = text;
 }
 
 function exportData(){
-  const data = JSON.stringify({tasks, folders, notes, sections, exportedAt: new Date().toLocaleString('pt-BR')}, null, 2);
+  const data = JSON.stringify({tasks, folders, notes, sections, trash, clientLinks, exportedAt: new Date().toLocaleString('pt-BR')}, null, 2);
   const blob = new Blob([data], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -776,6 +1094,8 @@ function exportData(){
   a.download = `gestaoplena_backup_${today()}.json`;
   a.click();
   URL.revokeObjectURL(url);
+  localStorage.setItem(LAST_EXPORT_KEY, new Date().toISOString());
+  hideBackupReminder();
   showToast('Backup exportado');
 }
 function importData(evt){
@@ -791,6 +1111,8 @@ function importData(evt){
       folders = Array.isArray(parsed.folders) ? parsed.folders : folders;
       notes = Array.isArray(parsed.notes) ? parsed.notes : notes;
       sections = Array.isArray(parsed.sections) ? parsed.sections : sections;
+      trash = Array.isArray(parsed.trash) ? parsed.trash : trash;
+      clientLinks = (parsed.clientLinks && typeof parsed.clientLinks === 'object') ? parsed.clientLinks : clientLinks;
       saveData();
       renderAll();
       showToast('Dados importados com sucesso');
@@ -851,6 +1173,118 @@ function promptNewSection(){
   renderAll();
   showToast('Seção adicionada: ' + clean);
 }
+function renameFolder(oldName){
+  const newName = prompt('Novo nome do cliente:', oldName);
+  if(!newName) return;
+  const clean = newName.trim();
+  if(!clean || clean === oldName) return;
+  if(folders.includes(clean)){ alert('Já existe um cliente com esse nome.'); return; }
+  const idx = folders.indexOf(oldName);
+  if(idx !== -1) folders[idx] = clean;
+  const affected = tasks.filter(t=>t.folder===oldName);
+  affected.forEach(t=>{ t.folder = clean; });
+  if(clientLinks[oldName] !== undefined){ clientLinks[clean] = clientLinks[oldName]; delete clientLinks[oldName]; }
+  if(currentView === oldName) currentView = clean;
+  saveData();
+  syncPushMeta();
+  affected.forEach(syncPushTask);
+  renderAll();
+  showToast('Cliente renomeado para: ' + clean);
+}
+function renameSection(oldName){
+  const newName = prompt('Novo nome da seção:', oldName);
+  if(!newName) return;
+  const clean = newName.trim();
+  if(!clean || clean === oldName) return;
+  if(sections.includes(clean)){ alert('Já existe uma seção com esse nome.'); return; }
+  const idx = sections.indexOf(oldName);
+  if(idx !== -1) sections[idx] = clean;
+  const affected = tasks.filter(t=>t.folder===oldName);
+  affected.forEach(t=>{ t.folder = clean; });
+  if(clientLinks[oldName] !== undefined){ clientLinks[clean] = clientLinks[oldName]; delete clientLinks[oldName]; }
+  if(currentView === oldName) currentView = clean;
+  saveData();
+  syncPushMeta();
+  affected.forEach(syncPushTask);
+  renderAll();
+  showToast('Seção renomeada para: ' + clean);
+}
+
+let clientLinksTarget = null;
+function migrateClientLinks(){
+  let changed = false;
+  Object.keys(clientLinks).forEach(name=>{
+    if(typeof clientLinks[name] === 'string'){
+      clientLinks[name] = [{id: uid(), label: 'Link', url: clientLinks[name]}];
+      changed = true;
+    }
+  });
+  return changed;
+}
+function openClientLinksModal(name){
+  clientLinksTarget = name;
+  document.getElementById('clientLinksTitle').textContent = 'Links — ' + name;
+  document.getElementById('newLinkLabel').value = '';
+  document.getElementById('newLinkUrl').value = '';
+  renderClientLinksList();
+  document.getElementById('clientLinksOverlay').classList.add('open');
+}
+function closeClientLinksModal(){
+  document.getElementById('clientLinksOverlay').classList.remove('open');
+  clientLinksTarget = null;
+}
+function renderClientLinksList(){
+  const container = document.getElementById('clientLinksList');
+  const links = clientLinks[clientLinksTarget] || [];
+  if(links.length === 0){
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-soft)">Nenhum link cadastrado ainda.</p>';
+    return;
+  }
+  container.innerHTML = '';
+  links.forEach(l=>{
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);';
+    const openBtn = document.createElement('button');
+    openBtn.className = 'badge-link';
+    openBtn.style.cssText = 'text-align:left;flex:1;font-size:13px;padding:6px 10px;';
+    openBtn.innerHTML = ICO.link + ' ' + escapeHtml(l.label || 'Link');
+    openBtn.onclick = () => window.open(l.url, '_blank', 'noopener');
+    const delBtn = document.createElement('button');
+    delBtn.className = 'icon-btn';
+    delBtn.textContent = '✕';
+    delBtn.title = 'Remover link';
+    delBtn.onclick = () => deleteClientLink(l.id);
+    row.appendChild(openBtn);
+    row.appendChild(delBtn);
+    container.appendChild(row);
+  });
+}
+function addClientLink(){
+  const label = document.getElementById('newLinkLabel').value.trim() || 'Link';
+  const url = document.getElementById('newLinkUrl').value.trim();
+  if(!url){ alert('Cole uma URL antes de adicionar.'); return; }
+  if(!clientLinks[clientLinksTarget]) clientLinks[clientLinksTarget] = [];
+  clientLinks[clientLinksTarget].push({id: uid(), label, url});
+  document.getElementById('newLinkLabel').value = '';
+  document.getElementById('newLinkUrl').value = '';
+  saveData();
+  syncPushMeta();
+  renderClientLinksList();
+  renderFolderNav();
+  renderSectionNav();
+  showToast('Link adicionado');
+}
+function deleteClientLink(id){
+  clientLinks[clientLinksTarget] = (clientLinks[clientLinksTarget] || []).filter(l=>l.id!==id);
+  saveData();
+  syncPushMeta();
+  renderClientLinksList();
+  renderFolderNav();
+  renderSectionNav();
+}
+document.getElementById('clientLinksOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'clientLinksOverlay') closeClientLinksModal();
+});
 
 function renderFolderNav(){
   const nav = document.getElementById('folderNav');
@@ -858,11 +1292,26 @@ function renderFolderNav(){
   folders.forEach(f=>{
     const count = tasks.filter(t=>t.folder===f && t.status!=='concluida').length;
     const color = getFolderColor(f);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'nav-item-wrapper';
     const btn = document.createElement('button');
     btn.className = 'nav-item' + (currentView===f ? ' active' : '');
     btn.innerHTML = `<span class="label"><span class="folder-dot" style="background:${color}"></span> ${escapeHtml(f)}</span><span class="count">${count}</span>`;
     btn.onclick = () => setView(f);
-    nav.appendChild(btn);
+    const linkBtn = document.createElement('button');
+    linkBtn.className = 'nav-edit-btn' + ((clientLinks[f] && clientLinks[f].length) ? ' has-link' : '');
+    linkBtn.title = 'Links rápidos';
+    linkBtn.innerHTML = ICO.link;
+    linkBtn.onclick = (e) => { e.stopPropagation(); openClientLinksModal(f); };
+    const editBtn = document.createElement('button');
+    editBtn.className = 'nav-edit-btn';
+    editBtn.title = 'Renomear cliente';
+    editBtn.textContent = '✎';
+    editBtn.onclick = (e) => { e.stopPropagation(); renameFolder(f); };
+    wrapper.appendChild(btn);
+    wrapper.appendChild(linkBtn);
+    wrapper.appendChild(editBtn);
+    nav.appendChild(wrapper);
   });
 }
 function renderSectionNav(){
@@ -871,11 +1320,26 @@ function renderSectionNav(){
   nav.innerHTML = '';
   sections.forEach(s=>{
     const count = tasks.filter(t=>t.folder===s && t.status!=='concluida').length;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'nav-item-wrapper';
     const btn = document.createElement('button');
     btn.className = 'nav-item' + (currentView===s ? ' active' : '');
     btn.innerHTML = `<span class="label"><span class="folder-dot" style="background:var(--gold)"></span> ${escapeHtml(s)}</span><span class="count">${count}</span>`;
     btn.onclick = () => setView(s);
-    nav.appendChild(btn);
+    const linkBtn = document.createElement('button');
+    linkBtn.className = 'nav-edit-btn' + ((clientLinks[s] && clientLinks[s].length) ? ' has-link' : '');
+    linkBtn.title = 'Links rápidos';
+    linkBtn.innerHTML = ICO.link;
+    linkBtn.onclick = (e) => { e.stopPropagation(); openClientLinksModal(s); };
+    const editBtn = document.createElement('button');
+    editBtn.className = 'nav-edit-btn';
+    editBtn.title = 'Renomear seção';
+    editBtn.textContent = '✎';
+    editBtn.onclick = (e) => { e.stopPropagation(); renameSection(s); };
+    wrapper.appendChild(btn);
+    wrapper.appendChild(linkBtn);
+    wrapper.appendChild(editBtn);
+    nav.appendChild(wrapper);
   });
 }
 
@@ -885,7 +1349,7 @@ function setView(view){
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   renderFolderNav();
   renderSectionNav();
-  const known = {todas:'cnt-todas', hoje:'cnt-hoje', embreve:'cnt-embreve', vencidas:'cnt-vencidas'};
+  const known = {todas:'cnt-todas', hoje:'cnt-hoje', embreve:'cnt-embreve', vencidas:'cnt-vencidas', lixeira:'cnt-lixeira'};
   if(known[view]){
     document.querySelector(`[data-view="${view}"]`).classList.add('active');
   }
@@ -921,7 +1385,12 @@ function getFilteredTasks(){
     list = list.filter(t=> t.title.toLowerCase().includes(q) || (t.notes||'').toLowerCase().includes(q));
   }
 
-  list.sort((a,b)=> (a.dueDate||'').localeCompare(b.dueDate||''));
+  const priorityRank = {alta:0, media:1, baixa:2};
+  list.sort((a,b)=>{
+    const dateCompare = (a.dueDate||'').localeCompare(b.dueDate||'');
+    if(dateCompare !== 0) return dateCompare;
+    return (priorityRank[a.priority] ?? 1) - (priorityRank[b.priority] ?? 1);
+  });
   return list;
 }
 
@@ -936,10 +1405,52 @@ function escapeHtml(str){
 
 const recLabels = {diaria:'Diária',semanal:'Semanal',quinzenal:'Quinzenal',mensal:'Mensal',mensal_dia_util:'Mensal (dia útil)'};
 
+function renderTrashList(container){
+  if(trash.length === 0){
+    container.innerHTML = `<div class="empty-state">
+      <div class="serif">Lixeira vazia</div>
+      <div>Tarefas excluídas ficam aqui por 30 dias antes de sumir de vez.</div>
+    </div>`;
+    return;
+  }
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:10px;';
+  header.innerHTML = `<button class="btn-danger-ghost" onclick="emptyTrash()">Esvaziar lixeira</button>`;
+  container.appendChild(header);
+
+  trash.slice().sort((a,b)=> (b.deletedAt||'').localeCompare(a.deletedAt||'')).forEach(t=>{
+    const color = t.folder ? getFolderColor(t.folder) : null;
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.innerHTML = `
+      <div class="task-body">
+        <div class="task-title" style="cursor:default">${escapeHtml(t.title)}</div>
+        <div class="task-meta">
+          ${t.folder?`<span class="badge badge-folder" style="background:${hexToRgba(color,0.15)};color:${color}">${escapeHtml(t.folder)}</span>`:''}
+          <span class="badge badge-date">Excluída em ${formatDate(t.deletedAt.slice(0,10))}</span>
+        </div>
+      </div>
+      <div class="task-actions">
+        <button class="icon-btn" title="Restaurar">↺</button>
+        <button class="icon-btn" title="Excluir definitivamente">✕</button>
+      </div>
+    `;
+    const [restoreBtn, delBtn] = card.querySelectorAll('.icon-btn');
+    restoreBtn.onclick = () => restoreFromTrash(t.id);
+    delBtn.onclick = () => deletePermanently(t.id);
+    container.appendChild(card);
+  });
+}
 function renderTaskList(){
-  const list = getFilteredTasks();
   const container = document.getElementById('taskList');
   container.innerHTML = '';
+
+  if(currentView === 'lixeira'){
+    renderTrashList(container);
+    return;
+  }
+
+  const list = getFilteredTasks();
 
   if(list.length === 0){
     container.innerHTML = `<div class="empty-state">
@@ -960,14 +1471,16 @@ function renderTaskList(){
     const priorityBadge = t.priority ? `<span class="badge badge-${t.priority}">${t.priority==='alta'?'Alta':t.priority==='media'?'Média':'Baixa'}</span>` : '';
     const recBadge = t.recurrence ? `<span class="badge badge-rec">↻ ${recLabels[t.recurrence]}</span>` : '';
     let dateLabel;
-    if(overdue) dateLabel = `⚠️ ${formatDate(t.dueDate)}`;
-    else if(isTod) dateLabel = `📅 Hoje ${formatDate(t.dueDate)}`;
-    else if(soon) dateLabel = `⏳ ${formatDate(t.dueDate)} (em ${daysUntil(t.dueDate)}d)`;
-    else dateLabel = `📅 ${formatDate(t.dueDate)}`;
+    if(overdue) dateLabel = `${ICO.alert} ${formatDate(t.dueDate)}`;
+    else if(isTod) dateLabel = `${ICO.calendar} Hoje ${formatDate(t.dueDate)}`;
+    else if(soon) dateLabel = `${ICO.hourglass} ${formatDate(t.dueDate)} (em ${daysUntil(t.dueDate)}d)`;
+    else dateLabel = `${ICO.calendar} ${formatDate(t.dueDate)}`;
     const folderBadge = t.folder ? `<span class="badge badge-folder" style="background:${hexToRgba(color,0.15)};color:${color}"><span class="folder-dot" style="background:${color}"></span>${escapeHtml(t.folder)}</span>` : '';
+    const linkBadge = t.link ? `<button class="badge badge-link" title="Abrir link">${ICO.link} Link</button>` : '';
 
+    const checkClass = selectionMode ? (selectedIds.has(t.id) ? 'checked' : '') : (t.status==='concluida' ? 'checked' : '');
     card.innerHTML = `
-      <button class="task-check ${t.status==='concluida'?'checked':''}" title="Marcar como concluída"></button>
+      <button class="task-check ${checkClass}" title="${selectionMode?'Selecionar':'Marcar como concluída'}"></button>
       <div class="task-body">
         <div class="task-title">${escapeHtml(t.title)}</div>
         <div class="task-meta">
@@ -975,20 +1488,102 @@ function renderTaskList(){
           <span class="badge badge-date">${dateLabel}</span>
           ${recBadge}
           ${priorityBadge}
+          ${linkBadge}
           ${t.status==='andamento'?'<span class="badge badge-rec">Em andamento</span>':''}
         </div>
         ${t.notes?`<div class="task-notes">${escapeHtml(t.notes)}</div>`:''}
       </div>
       <div class="task-actions">
+        <button class="icon-btn" title="Duplicar">⧉</button>
         <button class="icon-btn" title="Editar">✎</button>
       </div>
     `;
-    card.querySelector('.task-check').onclick = () => toggleComplete(t.id);
+    card.querySelector('.task-check').onclick = () => {
+      if(selectionMode){ toggleTaskSelect(t.id); render(); }
+      else toggleComplete(t.id);
+    };
+    if(t.link){
+      card.querySelector('.badge-link').onclick = (e) => { e.stopPropagation(); window.open(t.link, '_blank', 'noopener'); };
+    }
     card.querySelector('.task-title').onclick = () => openTaskModal(t.id);
-    card.querySelector('.icon-btn').onclick = () => openTaskModal(t.id);
+    const [dupBtn, editBtn] = card.querySelectorAll('.task-actions .icon-btn');
+    dupBtn.onclick = () => duplicateTask(t.id);
+    editBtn.onclick = () => openTaskModal(t.id);
     container.appendChild(card);
   });
 }
+
+// ========== SELEÇÃO MÚLTIPLA / AÇÕES EM LOTE ==========
+let selectionMode = false;
+let selectedIds = new Set();
+function toggleSelectionMode(){
+  selectionMode = !selectionMode;
+  selectedIds.clear();
+  document.getElementById('selectModeBtn').classList.toggle('active-mode', selectionMode);
+  updateBulkActionsBar();
+  render();
+}
+function updateBulkActionsBar(){
+  const bar = document.getElementById('bulkActionsBar');
+  if(!bar) return;
+  bar.style.display = selectionMode ? 'flex' : 'none';
+  const countEl = document.getElementById('selectedCount');
+  if(countEl) countEl.textContent = selectedIds.size;
+}
+function toggleTaskSelect(id){
+  if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+  updateBulkActionsBar();
+}
+function bulkComplete(){
+  if(selectedIds.size === 0){ showToast('Selecione ao menos uma tarefa'); return; }
+  tasks.forEach(t=>{
+    if(selectedIds.has(t.id)){ t.status = 'concluida'; syncPushTask(t); }
+  });
+  saveData();
+  toggleSelectionMode();
+  renderAll();
+  showToast('Tarefas marcadas como concluídas');
+}
+function bulkMoveClient(){
+  if(selectedIds.size === 0){ showToast('Selecione ao menos uma tarefa'); return; }
+  document.getElementById('moveClientSelect').innerHTML = buildFolderOptions();
+  document.getElementById('moveClientOverlay').classList.add('open');
+}
+function closeMoveClientModal(){
+  document.getElementById('moveClientOverlay').classList.remove('open');
+}
+function confirmBulkMoveClient(){
+  const target = document.getElementById('moveClientSelect').value;
+  if(!target) return;
+  const affected = [];
+  tasks.forEach(t=>{
+    if(selectedIds.has(t.id)){ t.folder = target; affected.push(t); }
+  });
+  saveData();
+  affected.forEach(syncPushTask);
+  closeMoveClientModal();
+  toggleSelectionMode();
+  renderAll();
+  showToast('Tarefas movidas para: ' + target);
+}
+function bulkDeleteSelected(){
+  if(selectedIds.size === 0){ showToast('Selecione ao menos uma tarefa'); return; }
+  if(!confirm(`Mover ${selectedIds.size} tarefa(s) selecionada(s) para a Lixeira?`)) return;
+  tasks.forEach(t=>{
+    if(selectedIds.has(t.id)){
+      trash.push({...t, deletedAt: new Date().toISOString()});
+      syncDeleteTask(t.id);
+    }
+  });
+  tasks = tasks.filter(t=>!selectedIds.has(t.id));
+  saveData();
+  toggleSelectionMode();
+  renderAll();
+  showToast('Tarefas movidas para a lixeira');
+}
+document.getElementById('moveClientOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'moveClientOverlay') closeMoveClientModal();
+});
 
 function toggleComplete(id){
   const t = tasks.find(x=>x.id===id);
@@ -1024,20 +1619,39 @@ function renderStats(){
   document.getElementById('cnt-hoje').textContent = tasks.filter(t=>t.dueDate===today() && t.status!=='concluida').length;
   document.getElementById('cnt-embreve').textContent = soon;
   document.getElementById('cnt-vencidas').textContent = venc;
+  document.getElementById('cnt-lixeira').textContent = trash.length;
 
   const printDateEl = document.getElementById('printDate');
   if(printDateEl) printDateEl.textContent = formatDate(today());
 }
 
 function renderViewTitle(){
-  const titles = {todas:'Todas as Tarefas', hoje:'Agenda de Hoje', embreve:'Vence em Breve (1-2 dias)', vencidas:'Tarefas Vencidas'};
+  const titles = {todas:'Todas as Tarefas', hoje:'Agenda de Hoje', embreve:'Vence em Breve (1-2 dias)', vencidas:'Tarefas Vencidas', lixeira:'Lixeira'};
   document.getElementById('viewTitle').textContent = titles[currentView] || currentView;
 }
 
+function renderClientSummary(){
+  const el = document.getElementById('clientSummary');
+  if(!el) return;
+  const isClientView = folders.includes(currentView) || sections.includes(currentView);
+  if(!isClientView){ el.textContent = ''; return; }
+  const clientTasks = tasks.filter(t=>t.folder===currentView);
+  const pend = clientTasks.filter(t=>t.status==='pendente').length;
+  const and = clientTasks.filter(t=>t.status==='andamento').length;
+  const venc = clientTasks.filter(t=>isOverdue(t.dueDate,t.status)).length;
+  const upcoming = clientTasks
+    .filter(t=>t.status!=='concluida')
+    .sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''))[0];
+  const parts = [`${pend} pendente(s)`, `${and} em andamento`];
+  if(venc>0) parts.push(`${ICO.alert} ${venc} vencida(s)`);
+  if(upcoming) parts.push(`próxima entrega: ${formatDate(upcoming.dueDate)}`);
+  el.innerHTML = parts.join(' &middot; ');
+}
 function render(){
   renderTaskList();
   renderStats();
   renderViewTitle();
+  renderClientSummary();
 }
 function renderAll(){
   renderFolderNav();
@@ -1084,12 +1698,30 @@ function openTaskModal(id){
   document.getElementById('fRecurrenceDay').value = t && t.recurrenceDay!==undefined ? t.recurrenceDay : '1';
   document.getElementById('fRecurrenceNth').value = t && t.recurrenceNth ? t.recurrenceNth : 5;
   document.getElementById('fNotes').value = t ? (t.notes||'') : '';
+  document.getElementById('fLink').value = t ? (t.link||'') : '';
   onRecurrenceChange();
   document.getElementById('taskOverlay').classList.add('open');
 }
 function closeTaskModal(){
   document.getElementById('taskOverlay').classList.remove('open');
   editingId = null;
+}
+function duplicateTask(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  openTaskModal(); // abre em modo "nova tarefa" (editingId fica null)
+  document.getElementById('modalTitle').textContent = 'Duplicar Tarefa';
+  document.getElementById('fTitle').value = t.title;
+  document.getElementById('fFolder').value = t.folder;
+  document.getElementById('fPriority').value = t.priority;
+  document.getElementById('fStatus').value = 'pendente';
+  document.getElementById('fDueDate').value = t.dueDate;
+  document.getElementById('fRecurrence').value = t.recurrence || '';
+  document.getElementById('fRecurrenceDay').value = t.recurrenceDay !== undefined ? t.recurrenceDay : '1';
+  document.getElementById('fRecurrenceNth').value = t.recurrenceNth || 5;
+  document.getElementById('fNotes').value = t.notes || '';
+  document.getElementById('fLink').value = t.link || '';
+  onRecurrenceChange();
 }
 document.getElementById('taskOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'taskOverlay') closeTaskModal();
@@ -1099,51 +1731,106 @@ document.addEventListener('keydown', (e)=>{
   if(document.getElementById('taskOverlay').classList.contains('open')) closeTaskModal();
   if(document.getElementById('bulkOverlay').classList.contains('open')) closeBulkModal();
   if(document.getElementById('syncOverlay').classList.contains('open')) closeSyncModal();
+  if(document.getElementById('versionHistoryOverlay').classList.contains('open')) closeVersionHistoryModal();
+  if(document.getElementById('moveClientOverlay').classList.contains('open')) closeMoveClientModal();
+  if(document.getElementById('clientLinksOverlay').classList.contains('open')) closeClientLinksModal();
+  if(document.getElementById('whatsappOverlay').classList.contains('open')) closeWhatsappModal();
+  if(document.getElementById('reportOverlay').classList.contains('open')) closeReportModal();
+});
+function isTypingContext(el){
+  const tag = (el && el.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || (el && el.isContentEditable);
+}
+function anyOverlayOpen(){
+  return ['taskOverlay','bulkOverlay','syncOverlay','versionHistoryOverlay','moveClientOverlay']
+    .some(id=>{ const el = document.getElementById(id); return el && el.classList.contains('open'); });
+}
+document.addEventListener('keydown', (e)=>{
+  if((e.key === 'n' || e.key === 'N') && !anyOverlayOpen() && !isTypingContext(e.target)){
+    e.preventDefault();
+    openTaskModal();
+  }
 });
 function saveTask(evt){
   evt.preventDefault();
-  const folder = document.getElementById('fFolder').value;
-  if(!folder){ alert('Cadastre um cliente antes de criar a tarefa.'); return; }
-  const recurrence = document.getElementById('fRecurrence').value;
-  const data = {
-    folder,
-    title: document.getElementById('fTitle').value.trim(),
-    priority: document.getElementById('fPriority').value,
-    status: document.getElementById('fStatus').value,
-    dueDate: document.getElementById('fDueDate').value,
-    recurrence: recurrence || null,
-    recurrenceDay: recurrence === 'semanal' ? document.getElementById('fRecurrenceDay').value : undefined,
-    recurrenceNth: recurrence === 'mensal_dia_util' ? document.getElementById('fRecurrenceNth').value : undefined,
-    notes: document.getElementById('fNotes').value.trim()
-  };
-  if(data.recurrence === 'semanal' && data.recurrenceDay !== undefined && data.recurrenceDay !== ''){
-    data.dueDate = alignToWeekday(data.dueDate, parseInt(data.recurrenceDay,10));
+  try{
+    const folder = document.getElementById('fFolder').value;
+    if(!folder){ alert('Cadastre um cliente antes de criar a tarefa.'); return; }
+    const recurrence = document.getElementById('fRecurrence').value;
+    const data = {
+      folder,
+      title: document.getElementById('fTitle').value.trim(),
+      priority: document.getElementById('fPriority').value,
+      status: document.getElementById('fStatus').value,
+      dueDate: document.getElementById('fDueDate').value,
+      recurrence: recurrence || null,
+      recurrenceDay: recurrence === 'semanal' ? document.getElementById('fRecurrenceDay').value : undefined,
+      recurrenceNth: recurrence === 'mensal_dia_util' ? document.getElementById('fRecurrenceNth').value : undefined,
+      notes: document.getElementById('fNotes').value.trim(),
+      link: document.getElementById('fLink').value.trim()
+    };
+    if(!data.title){ alert('Preencha o título da tarefa.'); return; }
+    if(!data.dueDate){ alert('Preencha a data de vencimento.'); return; }
+    if(data.recurrence === 'semanal' && data.recurrenceDay !== undefined && data.recurrenceDay !== ''){
+      data.dueDate = alignToWeekday(data.dueDate, parseInt(data.recurrenceDay,10));
+    }
+    let savedTask;
+    if(editingId){
+      const idx = tasks.findIndex(x=>x.id===editingId);
+      tasks[idx] = {...tasks[idx], ...data};
+      savedTask = tasks[idx];
+    } else {
+      savedTask = {id: uid(), createdAt: new Date().toISOString(), ...data};
+      tasks.push(savedTask);
+    }
+    saveData();
+    syncPushTask(savedTask);
+    closeTaskModal();
+    renderAll();
+    showToast('Tarefa salva');
+  }catch(err){
+    alert('ERRO ao salvar a tarefa:\n\n' + err.message + '\n\nTira um print desta mensagem e me manda.');
+    console.error(err);
   }
-  let savedTask;
-  if(editingId){
-    const idx = tasks.findIndex(x=>x.id===editingId);
-    tasks[idx] = {...tasks[idx], ...data};
-    savedTask = tasks[idx];
-  } else {
-    savedTask = {id: uid(), createdAt: new Date().toISOString(), ...data};
-    tasks.push(savedTask);
-  }
-  saveData();
-  syncPushTask(savedTask);
-  closeTaskModal();
-  renderAll();
-  showToast('Tarefa salva');
 }
 function deleteCurrentTask(){
   if(!editingId) return;
-  if(!confirm('Excluir esta tarefa definitivamente?')) return;
+  if(!confirm('Mover esta tarefa para a Lixeira? Ela fica lá por 30 dias, dá pra restaurar depois.')) return;
   const idToDelete = editingId;
+  const task = tasks.find(x=>x.id===idToDelete);
   tasks = tasks.filter(x=>x.id!==idToDelete);
+  if(task) trash.push({...task, deletedAt: new Date().toISOString()});
   saveData();
   syncDeleteTask(idToDelete);
   closeTaskModal();
   renderAll();
-  showToast('Tarefa excluída');
+  showToast('Tarefa movida para a Lixeira');
+}
+function restoreFromTrash(id){
+  const idx = trash.findIndex(t=>t.id===id);
+  if(idx === -1) return;
+  const {deletedAt, ...task} = trash[idx];
+  trash.splice(idx,1);
+  tasks.push(task);
+  saveData();
+  syncPushTask(task);
+  renderAll();
+  showToast('Tarefa restaurada');
+}
+function deletePermanently(id){
+  if(!confirm('Excluir esta tarefa DEFINITIVAMENTE? Não tem mais como recuperar depois disso.')) return;
+  trash = trash.filter(t=>t.id!==id);
+  saveData();
+  renderAll();
+  showToast('Tarefa excluída definitivamente');
+}
+function emptyTrash(){
+  if(trash.length === 0) return;
+  if(!confirm(`Excluir DEFINITIVAMENTE todas as ${trash.length} tarefa(s) da lixeira? Não tem mais como recuperar depois disso.`)) return;
+  trash = [];
+  saveData();
+  renderAll();
+  showToast('Lixeira esvaziada');
 }
 
 // ========== IMPRESSÃO ==========
@@ -1152,26 +1839,228 @@ function printChecklist(){
   setTimeout(()=>window.print(), 150);
 }
 
-// ========== NOTAS RÁPIDAS ==========
-function renderNotes(){
-  const grid = document.getElementById('notesGrid');
-  grid.innerHTML = '';
-  if(notes.length === 0){
-    grid.innerHTML = '<div class="notes-empty">Nenhuma nota por aqui ainda.</div>';
+// ========== RESUMO NO WHATSAPP ==========
+const WHATSAPP_SELF_NUMBER = '5584996496377'; // (84) 99649-6377, com código do Brasil
+
+function openWhatsappModal(){
+  document.getElementById('waClient').innerHTML = buildFolderOptions();
+  document.getElementById('waType').value = 'hoje';
+  onWaTypeChange();
+  document.getElementById('whatsappOverlay').classList.add('open');
+}
+function closeWhatsappModal(){
+  document.getElementById('whatsappOverlay').classList.remove('open');
+}
+function onWaTypeChange(){
+  const val = document.getElementById('waType').value;
+  document.getElementById('waClientGroup').style.display =
+    (val==='avencer_cliente' || val==='vencidas_cliente') ? 'block' : 'none';
+}
+function buildWhatsappText(type, client){
+  const tod = today();
+  let msg = '';
+  if(type === 'hoje'){
+    const list = tasks.filter(t=>t.dueDate===tod && t.status!=='concluida');
+    msg = `📋 Agenda de hoje — ${formatDate(tod)}\n\n`;
+    msg += list.length ? list.map(t=>`• ${t.title}${t.folder?' — '+t.folder:''}`).join('\n') : 'Nenhuma tarefa hoje. ✅';
+  } else if(type === 'amanha'){
+    const d = parseLocalDate(tod);
+    d.setDate(d.getDate()+1);
+    const amanha = toLocalISO(d);
+    const list = tasks.filter(t=>t.dueDate===amanha && t.status!=='concluida');
+    msg = `📋 Agenda de amanhã — ${formatDate(amanha)}\n\n`;
+    msg += list.length ? list.map(t=>`• ${t.title}${t.folder?' — '+t.folder:''}`).join('\n') : 'Nenhuma tarefa amanhã. ✅';
+  } else if(type === 'pendentes'){
+    const list = tasks.filter(t=>t.status==='pendente' || t.status==='andamento')
+      .sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+    msg = `📋 Tarefas pendentes (${list.length})\n\n`;
+    msg += list.length ? list.map(t=>`• ${t.title}${t.folder?' — '+t.folder:''} (${formatDate(t.dueDate)})`).join('\n') : 'Nenhuma tarefa pendente. ✅';
+  } else if(type === 'avencer_cliente'){
+    const list = tasks.filter(t=>t.folder===client && isSoon(t.dueDate,t.status))
+      .sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+    msg = `📋 A vencer — ${client}\n\n`;
+    msg += list.length ? list.map(t=>`• ${t.title} (${formatDate(t.dueDate)})`).join('\n') : 'Nada a vencer nos próximos dias.';
+  } else if(type === 'vencidas_cliente'){
+    const list = tasks.filter(t=>t.folder===client && isOverdue(t.dueDate,t.status))
+      .sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+    msg = `⚠️ Vencidas — ${client}\n\n`;
+    msg += list.length ? list.map(t=>`• ${t.title} (venceu ${formatDate(t.dueDate)})`).join('\n') : 'Nenhuma tarefa vencida. ✅';
+  }
+  return msg;
+}
+function confirmSendWhatsapp(){
+  const type = document.getElementById('waType').value;
+  const client = document.getElementById('waClient').value;
+  if((type==='avencer_cliente' || type==='vencidas_cliente') && !client){
+    alert('Cadastre um cliente antes.');
     return;
   }
-  notes.slice().sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||'')).forEach(n=>{
+  const text = buildWhatsappText(type, client);
+  const url = `https://wa.me/${WHATSAPP_SELF_NUMBER}?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank', 'noopener');
+  closeWhatsappModal();
+}
+document.getElementById('whatsappOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'whatsappOverlay') closeWhatsappModal();
+});
+
+// ========== RELATÓRIO (PDF / IMAGEM) ==========
+const MONTH_NAMES_PT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function openReportModal(){
+  const sel = document.getElementById('reportClient');
+  sel.innerHTML = '<option value="">Todos os clientes/seções</option>' + buildFolderOptions();
+  document.getElementById('reportPeriod').value = 'dia';
+  document.getElementById('reportRefDate').value = today();
+  document.getElementById('reportMonth').value = today().slice(0,7);
+  onReportPeriodChange();
+  document.getElementById('reportOverlay').classList.add('open');
+}
+function closeReportModal(){
+  document.getElementById('reportOverlay').classList.remove('open');
+}
+function onReportPeriodChange(){
+  const val = document.getElementById('reportPeriod').value;
+  document.getElementById('reportDateGroup').style.display = (val==='dia' || val==='semana') ? 'block' : 'none';
+  document.getElementById('reportMonthGroup').style.display = (val==='mes') ? 'block' : 'none';
+}
+function getReportTasks(period, refDate, client){
+  let list = tasks.slice();
+  let rangeLabel = '';
+  if(period === 'dia'){
+    list = list.filter(t=>t.dueDate === refDate);
+    rangeLabel = formatDate(refDate);
+  } else if(period === 'semana'){
+    const d = parseLocalDate(refDate);
+    const dow = d.getDay();
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - ((dow + 6) % 7));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const startISO = toLocalISO(monday), endISO = toLocalISO(sunday);
+    list = list.filter(t=>t.dueDate && t.dueDate >= startISO && t.dueDate <= endISO);
+    rangeLabel = `${formatDate(startISO)} a ${formatDate(endISO)}`;
+  } else if(period === 'mes'){
+    const [y,m] = refDate.split('-');
+    list = list.filter(t=>t.dueDate && t.dueDate.slice(0,7) === `${y}-${m}`);
+    rangeLabel = `${MONTH_NAMES_PT[parseInt(m,10)-1]} de ${y}`;
+  } else if(period === 'vencidas'){
+    list = list.filter(t=>isOverdue(t.dueDate, t.status));
+    rangeLabel = 'Vencidas';
+  } else {
+    rangeLabel = 'Todas as tarefas';
+  }
+  if(client){
+    list = list.filter(t=>t.folder === client);
+  }
+  list.sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+  return {list, rangeLabel};
+}
+function buildReportContent(){
+  const period = document.getElementById('reportPeriod').value;
+  const client = document.getElementById('reportClient').value;
+  const refDate = period === 'mes'
+    ? (document.getElementById('reportMonth').value || today().slice(0,7))
+    : (document.getElementById('reportRefDate').value || today());
+  const {list, rangeLabel} = getReportTasks(period, refDate, client);
+  const title = `Gestão Plena — ${rangeLabel}` + (client ? ` — ${client}` : '');
+  document.getElementById('reportTitleText').textContent = title;
+  const body = document.getElementById('reportBody');
+  if(list.length === 0){
+    body.innerHTML = '<p style="color:#8A7873">Nenhuma tarefa neste período.</p>';
+    return;
+  }
+  body.innerHTML = list.map(t=>{
+    const overdue = isOverdue(t.dueDate, t.status);
+    const statusLabel = t.status==='concluida' ? 'Concluída' : t.status==='andamento' ? 'Em andamento' : 'Pendente';
+    const priorityLabel = t.priority==='alta' ? 'Alta' : t.priority==='media' ? 'Média' : 'Baixa';
+    return `<div class="report-item">
+      <strong>${escapeHtml(t.title)}</strong>${t.folder ? ' — ' + escapeHtml(t.folder) : ''}
+      <div class="meta">${formatDate(t.dueDate)}${overdue ? ' ' + ICO.alert + ' vencida' : ''} · Prioridade ${priorityLabel} · ${statusLabel}</div>
+    </div>`;
+  }).join('');
+}
+function enterReportMode(){ document.body.classList.add('report-mode'); }
+function exitReportMode(){ document.body.classList.remove('report-mode'); }
+window.addEventListener('afterprint', exitReportMode);
+function exportReportPDF(){
+  buildReportContent();
+  closeReportModal();
+  enterReportMode();
+  setTimeout(()=>window.print(), 150);
+}
+function exportReportImage(){
+  if(typeof html2canvas === 'undefined'){
+    alert('Não foi possível carregar a biblioteca de exportação de imagem. Confira sua conexão com a internet e tente de novo.');
+    return;
+  }
+  buildReportContent();
+  closeReportModal();
+  enterReportMode();
+  setTimeout(()=>{
+    html2canvas(document.getElementById('reportContainer'), {backgroundColor:'#ffffff', scale:2}).then(canvas=>{
+      const link = document.createElement('a');
+      link.download = `relatorio_gestaoplena_${today()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      exitReportMode();
+    }).catch(err=>{
+      alert('Erro ao gerar imagem: ' + err.message);
+      exitReportMode();
+    });
+  }, 150);
+}
+document.getElementById('reportOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'reportOverlay') closeReportModal();
+});
+
+// ========== NOTAS RÁPIDAS ==========
+let selectedNotesDate = null; // definido em init() como hoje()
+
+function formatNotesDayLabel(dateStr){
+  const d = parseLocalDate(dateStr);
+  let label = d.toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
+  if(dateStr === today()) label += ' (hoje)';
+  return label;
+}
+function shiftNotesDay(delta){
+  const d = parseLocalDate(selectedNotesDate);
+  d.setDate(d.getDate() + delta);
+  selectedNotesDate = toLocalISO(d);
+  renderNotes();
+}
+function goToTodayNotes(){
+  selectedNotesDate = today();
+  renderNotes();
+}
+function renderNotes(){
+  if(!selectedNotesDate) selectedNotesDate = today();
+
+  const dayLabelEl = document.getElementById('notesDayLabel');
+  if(dayLabelEl) dayLabelEl.textContent = formatNotesDayLabel(selectedNotesDate);
+  const todayLinkEl = document.getElementById('notesTodayLink');
+  if(todayLinkEl) todayLinkEl.classList.toggle('current', selectedNotesDate === today());
+
+  const grid = document.getElementById('notesGrid');
+  grid.innerHTML = '';
+  const dayNotes = notes.filter(n => n.date === selectedNotesDate);
+  if(dayNotes.length === 0){
+    grid.innerHTML = '<div class="notes-empty">Nenhum lembrete para este dia.</div>';
+    return;
+  }
+  dayNotes.sort((a,b)=> (a.createdAt||'').localeCompare(b.createdAt||'')).forEach(n=>{
     const card = document.createElement('div');
     card.className = 'note-card';
-    card.innerHTML = `<button class="note-del" title="Excluir nota">✕</button><div>${escapeHtml(n.text)}</div>`;
+    card.innerHTML = `<button class="note-del" title="Excluir nota">✕</button><div>${escapeHtml(n.text)}</div><button class="note-to-task-btn" title="Transformar em tarefas">→ Criar tarefas</button>`;
     card.querySelector('.note-del').onclick = () => deleteNote(n.id);
+    card.querySelector('.note-to-task-btn').onclick = () => convertNoteToTasks(n.id);
     grid.appendChild(card);
   });
 }
 function addNote(){
-  const text = prompt('Nova nota:');
+  const dayLabel = formatNotesDayLabel(selectedNotesDate || today());
+  const text = prompt(`Novo lembrete para ${dayLabel}:`);
   if(!text || !text.trim()) return;
-  notes.push({id: uid(), text: text.trim(), createdAt: new Date().toISOString()});
+  notes.push({id: uid(), text: text.trim(), date: selectedNotesDate || today(), createdAt: new Date().toISOString()});
   saveData();
   syncPushMeta();
   renderNotes();
@@ -1181,6 +2070,16 @@ function deleteNote(id){
   saveData();
   syncPushMeta();
   renderNotes();
+}
+function migrateNotesDates(){
+  let changed = false;
+  notes.forEach(n=>{
+    if(!n.date){
+      n.date = n.createdAt ? n.createdAt.slice(0,10) : today();
+      changed = true;
+    }
+  });
+  return changed;
 }
 
 // ========== ROTINA EM LOTE ==========
@@ -1205,50 +2104,73 @@ function addBulkRow(){
   div.querySelector('.icon-btn').onclick = () => div.remove();
   document.getElementById('bulkRows').appendChild(div);
 }
-function openBulkModal(){
+function openBulkModal(prefillTitles){
   refreshBulkFolderSelect();
   document.getElementById('bulkRows').innerHTML = '';
-  addBulkRow(); addBulkRow(); addBulkRow();
+  if(prefillTitles && prefillTitles.length){
+    prefillTitles.forEach(title=>{
+      addBulkRow();
+      const rows = document.querySelectorAll('#bulkRows .bulk-row');
+      rows[rows.length-1].querySelector('.bulk-title').value = title;
+    });
+  } else {
+    addBulkRow(); addBulkRow(); addBulkRow();
+  }
   document.getElementById('bRecurrence').value = '';
   onBulkRecurrenceChange();
   document.getElementById('bulkOverlay').classList.add('open');
+}
+function convertNoteToTasks(noteId){
+  const note = notes.find(n=>n.id===noteId);
+  if(!note) return;
+  const lines = note.text.split('\n')
+    .map(l => l.replace(/^[-•*]\s*/,'').replace(/[;]+$/,'').trim())
+    .filter(Boolean);
+  if(lines.length === 0){ alert('Essa nota não tem conteúdo pra converter em tarefas.'); return; }
+  openBulkModal(lines);
+  showToast(lines.length + ' linha(s) prontas — escolha o cliente e a data');
 }
 function closeBulkModal(){
   document.getElementById('bulkOverlay').classList.remove('open');
 }
 function saveBulk(evt){
   evt.preventDefault();
-  const folder = document.getElementById('bFolder').value;
-  if(!folder){ alert('Cadastre um cliente antes de criar a rotina.'); return; }
-  const recurrence = document.getElementById('bRecurrence').value || null;
-  const recurrenceDay = recurrence==='semanal' ? document.getElementById('bRecurrenceDay').value : undefined;
-  const recurrenceNth = recurrence==='mensal_dia_util' ? document.getElementById('bRecurrenceNth').value : undefined;
-  const priority = document.getElementById('bPriority').value;
-  const rows = [...document.querySelectorAll('#bulkRows .bulk-row')];
-  let count = 0;
-  const createdTasks = [];
-  rows.forEach(row=>{
-    const title = row.querySelector('.bulk-title').value.trim();
-    let dueDate = row.querySelector('.bulk-date').value;
-    if(!title || !dueDate) return;
-    if(recurrence==='semanal' && recurrenceDay!==undefined && recurrenceDay!==''){
-      dueDate = alignToWeekday(dueDate, parseInt(recurrenceDay,10));
-    }
-    const newTask = {
-      id: uid(), createdAt: new Date().toISOString(),
-      folder, title, priority, status:'pendente', dueDate,
-      recurrence, recurrenceDay, recurrenceNth, notes:''
-    };
-    tasks.push(newTask);
-    createdTasks.push(newTask);
-    count++;
-  });
-  if(count===0){ alert('Preencha ao menos um item com título e data.'); return; }
-  saveData();
-  createdTasks.forEach(syncPushTask);
-  closeBulkModal();
-  renderAll();
-  showToast(count + ' tarefa(s) criada(s) com sucesso');
+  try{
+    const folder = document.getElementById('bFolder').value;
+    if(!folder){ alert('Cadastre um cliente antes de criar a rotina.'); return; }
+    const recurrence = document.getElementById('bRecurrence').value || null;
+    const recurrenceDay = recurrence==='semanal' ? document.getElementById('bRecurrenceDay').value : undefined;
+    const recurrenceNth = recurrence==='mensal_dia_util' ? document.getElementById('bRecurrenceNth').value : undefined;
+    const priority = document.getElementById('bPriority').value;
+    const rows = [...document.querySelectorAll('#bulkRows .bulk-row')];
+    let count = 0;
+    const createdTasks = [];
+    rows.forEach(row=>{
+      const title = row.querySelector('.bulk-title').value.trim();
+      let dueDate = row.querySelector('.bulk-date').value;
+      if(!title || !dueDate) return;
+      if(recurrence==='semanal' && recurrenceDay!==undefined && recurrenceDay!==''){
+        dueDate = alignToWeekday(dueDate, parseInt(recurrenceDay,10));
+      }
+      const newTask = {
+        id: uid(), createdAt: new Date().toISOString(),
+        folder, title, priority, status:'pendente', dueDate,
+        recurrence, recurrenceDay, recurrenceNth, notes:''
+      };
+      tasks.push(newTask);
+      createdTasks.push(newTask);
+      count++;
+    });
+    if(count===0){ alert('Preencha ao menos um item com título e data.'); return; }
+    saveData();
+    createdTasks.forEach(syncPushTask);
+    closeBulkModal();
+    renderAll();
+    showToast(count + ' tarefa(s) criada(s) com sucesso');
+  }catch(err){
+    alert('ERRO ao criar as tarefas em lote:\n\n' + err.message + '\n\nTira um print desta mensagem e me manda.');
+    console.error(err);
+  }
 }
 document.getElementById('bulkOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'bulkOverlay') closeBulkModal();
@@ -1311,12 +2233,19 @@ function generateSyncCode(){
   });
 }
 
+function stripUndefined(obj){
+  const clean = {};
+  Object.keys(obj).forEach(k=>{
+    if(obj[k] !== undefined) clean[k] = obj[k];
+  });
+  return clean;
+}
 function pushAllLocalDataToCloud(){
   const batch = db.batch();
   const tasksCol = db.collection('syncs').doc(syncCode).collection('tasks');
-  tasks.forEach(t=>{ batch.set(tasksCol.doc(t.id), t); });
+  tasks.forEach(t=>{ batch.set(tasksCol.doc(t.id), stripUndefined(t)); });
   const metaDoc = db.collection('syncs').doc(syncCode).collection('meta').doc('data');
-  batch.set(metaDoc, {folders, notes, sections});
+  batch.set(metaDoc, {folders, notes, sections, clientLinks});
   return batch.commit();
 }
 
@@ -1385,7 +2314,8 @@ function attachSyncListeners(){
         if(Array.isArray(d.folders)) folders = d.folders;
         if(Array.isArray(d.notes)) notes = d.notes;
         if(Array.isArray(d.sections)) sections = d.sections;
-        ensureTipsNote();
+        if(d.clientLinks && typeof d.clientLinks === 'object') clientLinks = d.clientLinks;
+        removeTipsNote(); migrateNotesDates(); migrateClientLinks();
         renderAll();
         saveData();
         applyingRemoteUpdate = false;
@@ -1400,7 +2330,7 @@ function attachSyncListeners(){
 // Envia só a tarefa alterada (nunca a lista inteira) — evita sobrescrever dado de outro aparelho
 function syncPushTask(task){
   if(!db || !syncCode || applyingRemoteUpdate) return;
-  db.collection('syncs').doc(syncCode).collection('tasks').doc(task.id).set(task)
+  db.collection('syncs').doc(syncCode).collection('tasks').doc(task.id).set(stripUndefined(task))
     .catch(err=>{ console.error(err); updateSyncStatusDot('error'); });
 }
 function syncDeleteTask(id){
@@ -1410,12 +2340,15 @@ function syncDeleteTask(id){
 }
 function syncPushMeta(){
   if(!db || !syncCode || applyingRemoteUpdate) return;
-  db.collection('syncs').doc(syncCode).collection('meta').doc('data').set({folders, notes, sections})
+  db.collection('syncs').doc(syncCode).collection('meta').doc('data').set({folders, notes, sections, clientLinks})
     .catch(err=>{ console.error(err); updateSyncStatusDot('error'); });
 }
 
 document.getElementById('syncOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'syncOverlay') closeSyncModal();
+});
+document.getElementById('versionHistoryOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'versionHistoryOverlay') closeVersionHistoryModal();
 });
 
 // ========== TOAST ==========
@@ -1440,6 +2373,7 @@ function checkDateRollover(){
   lastKnownDate = tod;
 }
 function init(){
+  selectedNotesDate = today();
   // Testa se o localStorage realmente funciona neste navegador, antes de qualquer coisa
   try{
     const testKey = '__gestaoplena_test__';
@@ -1454,6 +2388,7 @@ function init(){
   loadData();
   advanceOverdueRecurring();
   renderAll();
+  checkBackupReminder();
   lastKnownDate = today();
   setInterval(checkDateRollover, 60000);
   document.addEventListener('visibilitychange', () => { if(!document.hidden) checkDateRollover(); });
@@ -1464,6 +2399,13 @@ function init(){
     attachSyncListeners();
   }
 }
+window.addEventListener('error', function(e){
+  // Ignora erros genéricos de scripts de terceiros (ex: SDK do Firebase carregado de outro domínio),
+  // que o navegador reporta como "Script error." sem nenhum detalhe útil.
+  if(!e.message || e.message === 'Script error.' || e.message === 'Script error') return;
+  showToast('Erro: ' + e.message);
+  console.error('Erro capturado:', e);
+});
 init();
 </script>
 </body>
